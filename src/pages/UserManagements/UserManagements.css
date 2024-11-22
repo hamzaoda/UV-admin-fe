@@ -1,0 +1,90 @@
+.user-managements-container {
+    width: 100%;
+    padding: 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.user-managements-header-container {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+}
+
+.user-managements-header {
+    font-size: 1.5rem;
+    color: #333;
+    font-weight: bold;
+    margin: 0;
+}
+
+
+.user-managements-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+
+}
+
+
+.user-managements-table th,
+.user-managements-table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+.user-managements-table th {
+    background-color: #08488d;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.user-managements-table tr {
+    transition: 0.3s;
+}
+
+
+.user-managements-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+
+.user-managements-table td button {
+    background-color: #047e21;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s;
+}
+
+.user-managements-table td button:hover {
+    background-color: #218838;
+}
+.user-managements-table td button:disabled {
+    background-color: #3a99509b;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: default;
+    font-size: 12px;
+    transition: background-color 0.3s;
+}
+
+.user-managements-table input[type='checkbox'] {
+    cursor: pointer;
+    transform: scale(1.2);
+    border: none;
+}

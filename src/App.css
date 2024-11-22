@@ -1,0 +1,14 @@
+#root {}
+
+.main-content {
+    position: relative;
+    left: 16.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: calc(100vw - 17.8rem);
+    background-color: #f0f0f0;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

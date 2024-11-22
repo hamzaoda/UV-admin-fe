@@ -1,0 +1,231 @@
+.main-container{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 260px;
+    background: #11101d;
+    z-index: 100;
+    font-size: 1.125rem;
+}
+
+.sidebar-logo-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem 1rem;
+    margin-bottom: 2rem;
+}
+
+.sidebar-logo {
+    width: 3rem;
+
+}
+
+.sidebar-logo-text {
+    color: white;
+    font-weight: bold;
+}
+
+.sidebar-nav {
+    height: 70%;
+    overflow-y: auto;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 0.4rem;
+    /* Width of the scrollbar */
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: #0f0b31;
+    /* Color of the track */
+
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: #251a81;
+    /* Color of the thumb */
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Color of the thumb on hover */
+}
+
+
+.sidebar-nav-links {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin-bottom: 3rem;
+    /* background-color: antiquewhite; */
+    width: 90%;
+    height: 3.5rem;
+    margin: auto;
+    margin-bottom: 0.5rem;
+    border-radius: 0.8rem;
+    gap: 1rem;
+    color: white;
+    position: relative;
+    transition: 0.5s;
+    border: solid 0.1rem #11101d;
+    text-decoration: none;
+}
+
+.sidebar-nav-links:hover {
+    background-color: #0a00604d;
+    border: solid 0.1rem rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+}
+
+.sidebar-nav-links-activated {
+    background-color: #110b44 !important;
+    border: solid 0.1rem white !important;
+    cursor: pointer !important;
+    box-shadow: rgba(24, 24, 255, 0.3) 0px 7px 15px 0px !important;
+}
+
+.sidebar-nav-links-activated:hover {
+    background-color: #110b44 !important;
+    border: solid 0.1rem white !important;
+    cursor: pointer !important;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px !important;
+}
+
+.sidebar-nav-links-icon {
+    height: fit-content;
+    margin-left: 1rem;
+    position: relative;
+    top: 0.05rem;
+}
+
+.sidebar-nav-links-name {
+    width: 9rem;
+    word-break: break-all;
+}
+
+.sidebar-nav-links-arrow {
+    position: absolute;
+    right: 1rem;
+}
+
+.sidebar-nav-links-collapse-activated .sidebar-nav-links-arrow {
+    transform: rotate(-180deg);
+}
+
+/* Rotate arrow when collapsed */
+.sidebar-nav-links-arrow.rotated {
+    transform: rotate(180deg);
+    transition: transform 0.3s;
+}
+
+
+.sidebar-nav-links-collapse {
+    display: flex;
+    justify-content: ce;
+    align-items: center;
+    height: 3.5rem;
+    border-radius: 0.8rem;
+    gap: 1rem;
+    color: white;
+    position: relative;
+}
+
+
+.sidebar-nav-links-collapse-container {
+    background-color: #11101d;
+    border: solid 0.1rem rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    width: 90%;
+    margin: auto;
+    margin-bottom: 0.5rem;
+    border-radius: 0.8rem;
+    border: solid 0.1rem #11101d;
+    height: fit-content;
+    transition: all 0.5s;
+}
+
+.sidebar-nav-links-collapse-container:hover {
+    background-color: #0a00604d;
+    border: solid 0.1rem rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+}
+
+/* Submenu Styles */
+.submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 1s ease, margin-bottom 0.3s ease;
+    margin-bottom: 0;
+}
+
+.submenu.show {
+    max-height: 500px;
+    margin-bottom: 1rem;
+    /* Adjust based on content height */
+}
+
+.submenu-item {
+    color: #b0b0b0;
+    padding-left: 4rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: flex;
+    gap: 1rem;
+    text-decoration: none;
+}
+
+.submenu-item:hover {
+    color: white;
+}
+
+.submenu-activated {
+    color: white;
+    /* font-weight: bold; */
+}
+
+.submenu-icon {
+    position: relative;
+    top: 0.1rem;
+}
+
+
+.sidebar-profile-container {
+    position: absolute;
+    bottom: 0;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    /* Include padding within width */
+    padding: 1rem 1.5rem;
+    /* Add your padding */
+}
+
+.sidebar-profile-information-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-profile-icon {
+    font-size: 1.5rem;
+}
+
+.sidebar-profile-type {
+    font-size: 0.9rem;
+}
+
+
