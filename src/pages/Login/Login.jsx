@@ -12,7 +12,7 @@ import { showError } from '../../helpers/toastHandler';
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { callApi, isLoading } = useApi();
+  const { callApi, isLoading, isError, error } = useApi();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,49 +27,50 @@ function Login() {
       return;
     }
 
-    navigate('/main');
-
     const dataReq = { email, password };
-    const response = await callApi({
-      url: '/auth/login',
-      method: 'POST',
-      dataReq: dataReq,
-      token: false,
-      successMessage: 'Login Successfully',
-      errorMessage: 'Error Login',
-    });
 
-    // Reset fields after trying login
-    setEmail('');
-    setPassword('');
+    try {
+      const response = await callApi({
+        url: '/login',
+        method: 'POST',
+        dataReq: { email, password },
+        successMessage: 'Login Successfully',
+        errorMessage: 'Error Login',
+      });
+      console.log('Login Response:', response);
+      // Redirect or perform other actions after successful login
 
-    if (response) {
+      // Reset fields after trying login
+      setEmail('');
+      setPassword('');
+
       navigate('/main');
+    } catch (err) {
+      console.error('Login Error:', err);
     }
+
   };
 
   return (
-    <div className="sign-container">
-      <h1>Login</h1>
-      <form id="loginForm" onSubmit={handleSubmit}>
-        <div className="form-group">
+    <div className="sign-page">
+      <form id="loginForm" onSubmit={handleSubmit} className="sign-container">
+        <h1>Login</h1>
+        <div>
           <label htmlFor="email">Email:</label>
           <input
             type="email"
             id="email"
-            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             className="form-control"
           />
         </div>
-        <div className="form-group">
+        <div>
           <label htmlFor="password">Password:</label>
           <input
             type="password"
             id="password"
-            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -79,8 +80,8 @@ function Login() {
         <button className="w-100 btn btn-primary" type="submit" disabled={isLoading}>
           {isLoading ? 'logging ...' : 'Login'}
         </button>
-      </form>
-    </div>
+      </form >
+    </div >
   );
 }
 

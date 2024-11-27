@@ -1,0 +1,5 @@
+.email-managements-container {
+    height: calc(100vh - 2rem);
+    padding: 2rem 0;
+    box-sizing: border-box;
+}

@@ -1,184 +1,24 @@
+
+.sign-page{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: var(--sixth-color);
+}
+
 .sign-container {
     display: block;
-    /* Ensure container is a block element */
-    margin: 25vh auto;
-    /* Center horizontally and add vertical spacing */
+    margin: auto;
     padding: 1.5rem;
-    /* Optional padding */
-    border: 1px solid #ccc;
-    /* Optional border for visibility */
+    border: 1px solid var(--third-color);
     background-color: white;
-    /* Background color */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* Optional: Add shadow for depth */
+    box-shadow: var(--box-shadow2);
     border-radius: 0.3rem;
-    /* Optional: Rounded corners */
     text-align: center;
-    /* Optional: Center text inside container */
     width: fit-content;
     animation: fadeIn 0.5s ease-out;
-}
-
-h1 {
-    color: #565f97;
-}
-
-input[type=text] {
-    width: 19rem;
-    height: 2.5rem;
-    display: block;
-    border: solid 1px rgb(221, 221, 221);
-    margin-bottom: 1rem;
-    border-radius: 0.3rem;
-    padding: 0 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    font-size: 1rem;
-    border-width: 0.12rem;
-}
-
-input:hover {
-    border-color: #6e75a5;
-}
-
-input:focus {
-    border-color: #565f97;
-    /* Border color changes to blue on focus */
-    box-shadow: 0 0 3px #9ca7f0;
-    /* Add a blue shadow */
-    outline: none;
-    /* Removes the default outline */
-}
-
-button {
-    display: block;
-    /* width: 100%; */
-    height: 2.5rem;
-    border: none;
-    background: #565f97;
-    color: white;
-    border-radius: 0.3rem;
-    transition: all 0.5s;
-    font-size: 1rem;
-}
-
-button:hover {
-    background-color: #282f5f;
-    cursor: pointer;
-}
-
-button:disabled {
-    background-color: grey;
-    cursor: not-allowed;
-}
-
-.red-button {
-    background: rgb(192, 48, 48);
-    color: white;
-}
-
-.red-button:hover {
-    background: rgb(121, 11, 11);
-    color: white;
-}
-
-th {
     text-align: start;
-}
-
-.d-flex {
-    display: flex;
-    justify-content: start;
-    align-items: baseline;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-.error-message {
-    color: red;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.input-group {
-    margin-bottom: 20px;
-    position: relative;
-}
-
-.validation-indicators {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-}
-
-.circle {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: lightgrey;
-    /* Default color */
-    margin-right: 5px;
-    transition: 0.5s;
-}
-
-.valid {
-    color: rgb(28, 158, 28);
-
-    background: rgb(85, 189, 85);
-    /* When validation criteria is met */
-}
-
-.invalid {
-    background-color: rgb(161, 1, 1);
-    /* When validation criteria is not met */
-    color: rgb(189, 85, 85);
-}
-
-.default {
-    background-color: lightgrey;
-    /* Initial state */
-    color: rgb(99, 99, 99);
-}
-
-.validation-text {
-    font-size: 12px;
-    margin-right: 10px;
-    margin-bottom: 5px;
-    background-color: white;
-}
-
-.password-group {
-    position: relative;
-}
-
-.password-input-wrapper {
-    position: relative;
-}
-
-.password-toggle-icon {
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #777;
-    transition: 1s;
-}
-
-.password-toggle-icon:hover {
-    color: #333;
-}
-
-/* Adjust validation indicators for password fields */
-.password-group .validation-indicators {
-    margin-top: 10px;
 }
 
 .w-100 {

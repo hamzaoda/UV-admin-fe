@@ -1,123 +1,139 @@
-import React, { useState } from 'react';
+// src/components/UserManagements/UserManagements.jsx
+import React, { useState, useEffect } from 'react';
 import './UserManagements.css';
-import CustomCheckbox from '../../components/CustomComponents/CustomCheckbox/CustomCheckbox';
+import useApi from '../../hooks/useApi';
+import ReactPaginate from 'react-paginate'; // Import react-paginate
 
 function UserManagements() {
-    const [selectedUsers, setSelectedUsers] = useState([]);
-    const [emailStatus, setEmailStatus] = useState({});
+    const [currentPage, setCurrentPage] = useState(0); // 0-based index for react-paginate
+    const usersPerPage = 9; // Number of users per page
+    const [users, setUsers] = useState([]); // State to store fetched users
+    const { callApi, isLoading, isError, error } = useApi();
 
-    const users = [
-        { id: 1, email: 'ahmadnkw1@hotmail.com', date: '10/2/2024' },
-        { id: 2, email: 'user2@example.com', date: '11/2/2024' },
-        { id: 3, email: 'user3@example.com', date: '12/2/2024' },
-    ];
+    // Fields to display in the table
+    const fields = ["email", "country", "createdAt"]; // Added "country"
 
-    const fields = ["id", "email", "date"]
+    // Fetch users when the component mounts
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await callApi({
+                    url: '/cms/list',
+                    method: 'GET',
+                    successMessage: 'Users fetched successfully!',
+                    errorMessage: 'Error fetching users.',
+                });
 
-    fields.map((field) => {
-        console.log(field);
-    });
+                if (response.isSuccess) {
+                    setUsers(response.data); // Update the users state with fetched data
+                } else {
+                    console.error('API Error:', response.message);
+                    // Optionally, handle the error in the UI
+                }
 
-    users.map((user) => {
-        <tr>
-        fields.map((field) => {
-                <td>  console.log(user[field]);</td>
+                console.log('Fetched Users:', response);
+            } catch (error) {
+                console.error('Fetch Users Error:', error);
+                // Optionally, handle the error in the UI
+            }
+        };
+
+        fetchUsers();
+    }, [callApi]); // Added callApi as a dependency
+
+    // Calculate total pages based on fetched users
+    const totalPages = Math.ceil(users.length / usersPerPage);
+
+    // Get current page's users
+    const offset = currentPage * usersPerPage;
+    const currentUsers = users.slice(offset, offset + usersPerPage);
+
+    // Handle page change
+    const handlePageChange = ({ selected }) => {
+        setCurrentPage(selected);
+    };
+
+    // Handle send email button click
+    const handleSendEmail = async () => {
+        try {
+            const response = await callApi({
+                url: '/cms/send-email',
+                method: 'POST',
+                dataReq: { type: 'Welcome' },
+                successMessage: 'Email sent successfully!',
+                errorMessage: 'Error sending email.',
             });
-        </tr>
-    });
 
-    const handleCheckboxChange = (user) => {
-        setSelectedUsers((prevSelected) =>
-            prevSelected.includes(user.id)
-                ? prevSelected.filter((id) => id !== user.id)
-                : [...prevSelected, user.id]
-        );
-
-        // Log user details to the console
-        console.log(`User Selected:`, {
-            id: user.id,
-            email: user.email,
-            date: user.date,
-        });
-    };
-
-    const handleSelectAll = () => {
-        if (selectedUsers.length === users.length) {
-            setSelectedUsers([]); // Deselect all if all are selected
-        } else {
-            setSelectedUsers(users.map(user => user.id)); // Select all
+            if (!response.isSuccess) {
+                console.error('API Error:', response.message);
+                // Optionally, handle the error in the UI
+            }
+        } catch (error) {
+            console.error('Send Email Error:', error);
+            // Optionally, handle the error in the UI
         }
-    };
-
-    const handleSendEmail = (userId) => {
-        const user = users.find(user => user.id === userId);
-        console.log(`Sending email to:`, user);
-
-        setEmailStatus((prevStatus) => ({
-            ...prevStatus,
-            [userId]: 'sent', // Mark as sent
-        }));
-
-        setTimeout(() => {
-            setEmailStatus((prevStatus) => ({
-                ...prevStatus,
-                [userId]: 'default', // Reset to default after 5 seconds
-            }));
-        }, 5000);
-    };
-
-    const handleSendEmailToSelected = () => {
-        const selectedUserDetails = users.filter(user => selectedUsers.includes(user.id));
-        console.log('Sending email to selected users:', selectedUserDetails);
     };
 
     return (
         <div className="user-managements-container">
-            <div className="user-managements-header-container">
-                <button onClick={handleSelectAll}>
-                    {selectedUsers.length === users.length ? 'Deselect All' : 'Select All'}
-                </button>
-                <h1 className="user-managements-header">UserManagements</h1>
-                <button onClick={handleSendEmailToSelected}>Send Email</button>
+            <div className='user-managements-header-container'>
+                <select className='user-managements-select'>
+                    <option value="Welcome">Welcome</option>
+                </select>
+                <h1>User Management</h1>
+                <button className='user-managements-btn' onClick={handleSendEmail}>Send Email</button>
             </div>
             <table className="user-managements-table">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>Date</th>
-                        <th>Action</th>
-
+                        {fields.map((field) => (
+                            <th key={field}>
+                                {field === 'createdAt'
+                                    ? 'Date'
+                                    : field.charAt(0).toUpperCase() + field.slice(1)}
+                            </th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id}>
-                            <td>
-                                <CustomCheckbox
-                                    id={`checkbox-${user.id}`}
-                                    name="userCheckbox"
-                                    value={user.id}
-                                    checked={selectedUsers.includes(user.id)}
-                                    onChange={() => handleCheckboxChange(user)}
-                                />
-                            </td>
-                            <td>{user.id}</td>
-                            <td>{user.email}</td>
-                            <td>{user.date}</td>
-                            <td>
-                                <button
-                                    onClick={() => handleSendEmail(user.id)}
-                                    disabled={emailStatus[user.id] === 'sent'}
-                                >
-                                    {emailStatus[user.id] === 'sent' ? 'Email Sent' : 'Send Email'}
-                                </button>
-                            </td>
+                    {currentUsers.length === 0 ? (
+                        <tr>
+                            <td colSpan={fields.length}>No users found.</td>
                         </tr>
-                    ))}
+                    ) : (
+                        currentUsers.map((user) => (
+                            <tr key={user._id}>
+                                {fields.map((field) => (
+                                    <td key={field}>
+                                        {field === 'createdAt'
+                                            ? new Date(user.createdAt).toLocaleDateString()
+                                            : user[field]}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
+
+            {/* Pagination Controls using react-paginate */}
+            {totalPages > 1 && (
+                <div className="pagination-container">
+                    <ReactPaginate
+                        previousLabel={'Previous'}
+                        nextLabel={'Next'}
+                        breakLabel={'...'}
+                        breakClassName={'break-me'}
+                        pageCount={totalPages}
+                        marginPagesDisplayed={2}
+                        pageRangeDisplayed={5} // Adjusted for better UX
+                        onPageChange={handlePageChange}
+                        containerClassName={'pagination'}
+                        activeClassName={'active'}
+                        forcePage={currentPage}
+                    />
+                </div>
+            )}
         </div>
     );
 }

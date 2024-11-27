@@ -26,6 +26,12 @@
     animation: draw-checkbox-28 ease-in-out 0.2s forwards;
 }
 
+.checkbox-wrapper-28 input:not(:checked)~svg {
+    height: calc(var(--size) * 0.6);
+    -webkit-animation: undraw-checkbox-28 ease-in-out 0.2s forwards;
+    animation: undraw-checkbox-28 ease-in-out 0.2s forwards;
+}
+
 .checkbox-wrapper-28 label {
     color: #0080d3;
     line-height: var(--size);
@@ -71,5 +77,25 @@
 
     100% {
         stroke-dashoffset: 0;
+    }
+}
+
+@-webkit-keyframes undraw-checkbox-28 {
+    0% {
+        stroke-dashoffset: 0;
+    }
+
+    100% {
+        stroke-dashoffset: 33;
+    }
+}
+
+@keyframes undraw-checkbox-28 {
+    0% {
+        stroke-dashoffset: 0;
+    }
+
+    100% {
+        stroke-dashoffset: 33;
     }
 }

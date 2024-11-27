@@ -2,10 +2,186 @@
 
 
 :root {
+    --primary-color: #20180f;
+    --secondary-color: #471f0b;
+    --third-color: #f26822;
+    --fourth-color: #d27131;
+    --fifth-color: #edb488;
+    --sixth-color: #ffe1c9;
 
+    --danger-color: #d52027;
+    --success-color:#20d565;
+    --box-shadow1: rgba(255, 186, 24, 0.3) 0px 7px 15px 0px !important;
+    --box-shadow2: 0 0 20px color-mix(in srgb, var(--third-color), transparent 80%);
+
+    --nav-border: solid 0.1rem var(--secondary-color);
+    --nav-border-hover: solid 0.1rem rgba(255, 255, 255, 0.3);
+}
+
+::selection {
+    color: white;
+    /* Text color */
+    background-color: var(--fourth-color);
+    /* Background color */
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+}
+
+h1 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--box-shadow2);
 }
 
 
-body{
+table th,
+table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--sixth-color);
+    color: var(--primary-color);
+}
+
+table th {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+table tr {
+    transition: 0.3s;
+}
+
+
+table tr:hover {
+    background-color: color-mix(in srgb, var(--fourth-color), transparent 90%);
+}
+
+select, input, textarea, option {
+    box-sizing: border-box;
+    width: 16rem;
+    height: 2.5rem;
+    display: inline-block;
+    border: solid 1px rgb(221, 221, 221);
+    margin-bottom: 1rem;
+    border-radius: 0.3rem;
+    padding: 0 0 0 1rem;
+    transition: border-color 0.5s;
+    font-size: 1rem;
+    border-width: 0.12rem;
+}
+
+select{
+    padding-left: 0.7rem;
+}
+
+textarea {
+    width: 34rem;
+    height: 19rem;
+    min-height: 2.5rem; /* Minimum height constraint */
+    max-height: 19rem;
+    padding: 0.5rem;
+    padding-left: 1rem; /* Add vertical padding */
+    resize: none;
+    font-size: 1rem;
     font-family: 'Poppins', sans-serif;
+    text-align: center;
+}
+
+option {
+    background-color: #ffffff; /* Dropdown background color */
+    color: #333; /* Text color */
+    padding: 0;
+}
+option:hover {
+    background-color: var(--secondary-color); /* Dropdown background color */
+    color: white; /* Text color */
+}
+
+
+
+input:hover, select:hover, textarea:hover {
+    border-color: var(--fourth-color);
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--third-color);;
+    outline: none;
+}
+
+button {
+    display: flex;
+    align-items: center; /* Centers text vertically */
+    justify-content: center; /* Centers text horizontally */
+    height: 2.5rem;
+    width: 6.5rem; /* Adjust width as needed */
+    text-align: center;
+    border: none;
+    background: var(--fourth-color);
+    color: white;
+    border-radius: 0.3rem;
+    transition: all 0.5s;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.button-important{
+    background-color: var(--secondary-color);
+}
+
+.button-important:hover{
+    background-color: var(--primary-color);
+}
+
+.button-danger{
+    background-color: #af1e1e;
+}
+
+.button-danger:hover{
+    background-color: var(--danger-color);
+}
+.button-success{
+    background-color: var(--success-color);
+}
+
+.button-success:hover{
+    background-color: #1eaf56;
+}
+
+button:hover {
+    background-color: var(--third-color);
+}
+
+button:disabled {
+    background-color: grey;
+    cursor: not-allowed;
+}
+
+.button-{
+
+}
+
+label{
+    display: block;
+}
+
+.d-flex{
+    display: flex;
+    gap: 2rem;
 }

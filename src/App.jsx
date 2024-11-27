@@ -1,64 +1,54 @@
 // src/App.js
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login/Login';
-import Main from './pages/Main/Main';
-import Sidebar from './components/Sidebar/Sidebar';
 
+import React, { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from './redux/selectors';
-import UserManagements from './pages/UserManagements/UserManagements';
-import "./App.css"
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import Layout from './components/Layout/Layout';
+import './App.css';
+
+// Lazy-loaded components for better performance
+const Login = lazy(() => import('./pages/Login/Login'));
+const UserManagements = lazy(() => import('./pages/UserManagements/UserManagements'));
+const EmailManagements = lazy(() => import('./pages/EmailManagements/EmailManagements'));
+const NotFound = lazy(() => import('./pages/NotFound/NotFound')); // You can create a NotFound page
+
 const App = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   return (
-    <div className='main-content'>
+    <Suspense fallback={<div>Loading...</div>}>
       <Routes>
-        {/* المسار الرئيسي، ينتقل إلى Main إذا كان المستخدم مصادقًا، وإلا إلى صفحة تسجيل الدخول */}
+        {/* Redirect root based on authentication */}
         <Route
           path="/"
-          element={isAuthenticated ? <Navigate to="/main" /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <Navigate to="/user-managements" /> : <Navigate to="/login" />
+          }
         />
 
-        {/* مسار تسجيل الدخول */}
+        {/* Public Route: Login */}
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/main" /> : <Login />}
+          element={
+            isAuthenticated ? <Navigate to="/user-managements" /> : <Login />
+          }
         />
 
-        {/* تخطيط يحتوي على Sidebar لجميع المسارات المحمية */}
-        <Route
-          element={isAuthenticated ? <Sidebar /> : <Navigate to="/login" />}
-        />
-        <Route
-          element={<Sidebar />}
-        >
-          <Route
-            path="/main"
-            element={<Main />}
-          />
-                    <Route
-            path="/user-managements"
-            element={<UserManagements />}
-          />
-
-
-          {/* المسار الرئيسي بعد تسجيل الدخول */}
-          {/* <Route
-          path="/main"
-          element={isAuthenticated ? <Main /> : <Navigate to="/login" />}
-        /> */}
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/user-managements" element={<UserManagements />} />
+            <Route path="/email-managements" element={<EmailManagements />} />
+            {/* Add more protected routes here */}
+          </Route>
         </Route>
-        {/* مسارات غير معروفة: إعادة التوجيه إلى المسار الرئيسي */}
-        <Route
-          path="*"
-          element={<Navigate to="/" />}
-        />
-      </Routes>
 
-      {/* المكونات الأخرى يمكن إضافتها هنا حسب الحاجة */}
-    </div>
+        {/* Catch-all Route for 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 

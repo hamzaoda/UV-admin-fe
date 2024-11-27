@@ -1,90 +1,80 @@
 .user-managements-container {
-    width: 100%;
-    padding: 2rem 2rem;
+    position: relative;
+    width: 75%;
     display: flex;
+    padding: 2rem 0;
+    box-sizing: border-box;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
+    align-items: center;
+    height: calc(100vh - 2rem);
 }
 
-.user-managements-header-container {
+.user-managements-header-container{
     display: flex;
-    align-items: start;
     justify-content: space-between;
-    margin-bottom: 3rem;
-}
-
-.user-managements-header {
-    font-size: 1.5rem;
-    color: #333;
-    font-weight: bold;
-    margin: 0;
-}
-
-
-.user-managements-table {
     width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-
 }
 
-
-.user-managements-table th,
-.user-managements-table td {
-    text-align: left;
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-    color: #333;
+.user-managements-select{
+    width: 8.3rem;
 }
 
-.user-managements-table th {
-    background-color: #08488d;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 12px;
+.user-managements-btn{
+    width: 8rem;
 }
 
-.user-managements-table tr {
-    transition: 0.3s;
+.user-managements-table{
+    width: 100%;
 }
 
-
-.user-managements-table tr:hover {
-    background-color: #f1f1f1;
+.error-message {
+    color: red;
+    text-align: center;
 }
 
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    bottom: 1rem;
+}
 
-.user-managements-table td button {
-    background-color: #047e21;
-    color: white;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination li a {
+    padding: 8px 12px;
+    border: 1px solid var(--fourth-color);
+    color: var(--fourth-color);
     cursor: pointer;
-    font-size: 12px;
+    text-decoration: none;
+    border-radius: 4px;
     transition: background-color 0.3s;
 }
 
-.user-managements-table td button:hover {
-    background-color: #218838;
-}
-.user-managements-table td button:disabled {
-    background-color: #3a99509b;
-    color: white;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: default;
-    font-size: 12px;
-    transition: background-color 0.3s;
+.pagination li a:hover {
+    background-color: var(--sixth-color);
+    color: var(--fourth-color);
 }
 
-.user-managements-table input[type='checkbox'] {
-    cursor: pointer;
-    transform: scale(1.2);
-    border: none;
+.pagination li.active a {
+    background-color: var(--third-color);
+    color: white;
+    border-color: var(--fourth-color);
+}
+
+.pagination li.disabled a {
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    cursor: not-allowed;
+    background-color: rgb(255, 224, 224);
 }

@@ -1,19 +1,19 @@
 // src/redux/apiSlice.js
+
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { showSuccess, showError } from '../helpers/toastHandler';
 import { setCredentials, logout } from './authSlice';
 
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 export const apiSlice = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({
-        baseUrl: 'https://your.api.base.url',
-        prepareHeaders: (headers, { getState, endpoint }) => {
-            const requireToken = endpoint !== 'makeRequest' ? true : false;
-            if (requireToken) {
-                const token = getState().auth.token;
-                if (token) {
-                    headers.set('Authorization', `Bearer ${token}`);
-                }
+        baseUrl: baseUrl,
+        prepareHeaders: (headers, { getState }) => {
+            const token = getState().auth.token || localStorage.getItem('authToken');
+            if (token) {
+                headers.set('Authorization', `${token}`);
             }
             headers.set('Content-Type', 'application/json');
             return headers;
@@ -21,28 +21,38 @@ export const apiSlice = createApi({
     }),
     endpoints: (builder) => ({
         makeRequest: builder.mutation({
-            query: ({ url, method, dataReq = null, token = true }) => ({
+            query: ({ url, method, dataReq = null }) => ({
                 url,
                 method,
                 body: method !== 'GET' ? dataReq : undefined,
-                headers: token ? { Authorization: `Bearer ${localStorage.getItem('authToken')}` } : {},
             }),
             async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-                const { url, successMessage, errorMessage } = arg;
+                const { url, method, successMessage, errorMessage } = arg;
                 try {
                     const { data } = await queryFulfilled;
 
-                    if (url === '/auth/login') {
-                        dispatch(setCredentials({ token: data.token, user: data.user }));
+                    if (url === '/login') {
+                        const token = data.data.token;
+                        const user = data.data;
+                        if (token) {
+                            dispatch(setCredentials({ token, user }));
+                            localStorage.setItem('authToken', token);
+                            console.log('Login successful. Token stored:', token);
+                        } else {
+                            console.error('Token not found in login response:', data);
+                        }
                     }
 
-                    if (successMessage) {
+                    // **Conditional Success Toast**
+                    if (successMessage && method.toUpperCase() !== 'GET') { // Only show for non-GET methods
                         showSuccess(successMessage);
+                        console.log('Success:', successMessage);
                     }
                 } catch (err) {
-                    if (errorMessage) {
-                        console.log("Error");
-                        showError(errorMessage);
+                    console.error('API Error:', err);
+                    if (errorMessage) { // Only show error toast if message exists
+                        const errorMsg = err?.error?.data?.message || errorMessage;
+                        showError(errorMsg);
                     }
 
                     if (err?.data?.status === 401) {
@@ -52,7 +62,7 @@ export const apiSlice = createApi({
                 }
             },
         }),
-        // إضافة نقاط نهاية أخرى إذا لزم الأمر
+        // Add other endpoints if necessary
     }),
 });
 
