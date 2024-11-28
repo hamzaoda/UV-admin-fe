@@ -1,15 +1,21 @@
+.logo{
+    margin-top: 2rem;
+    width: 13rem;
+}
 
 .sign-page{
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: start;
     align-items: center;
     height: 100vh;
     background: var(--sixth-color);
+    gap: 2rem;
 }
 
 .sign-container {
     display: block;
-    margin: auto;
+    margin: 0 auto;
     padding: 1.5rem;
     border: 1px solid var(--third-color);
     background-color: white;

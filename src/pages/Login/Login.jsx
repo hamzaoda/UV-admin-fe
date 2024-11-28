@@ -8,6 +8,7 @@ import {
 import useApi from '../../hooks/useApi';
 import { useNavigate } from 'react-router-dom';
 import { showError } from '../../helpers/toastHandler';
+import Logo from '../../assets/Images/Logo.png';
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -44,7 +45,7 @@ function Login() {
       setEmail('');
       setPassword('');
 
-      navigate('/main');
+      navigate('/user-managements');
     } catch (err) {
       console.error('Login Error:', err);
     }
@@ -53,6 +54,7 @@ function Login() {
 
   return (
     <div className="sign-page">
+      <img src={Logo} className='logo' alt="Logo" />
       <form id="loginForm" onSubmit={handleSubmit} className="sign-container">
         <h1>Login</h1>
         <div>

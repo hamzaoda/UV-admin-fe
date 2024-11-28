@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import App from './App';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css'
@@ -19,7 +19,19 @@ root.render(
       }}
     >
       <App />
-      <ToastContainer />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable={false}
+        pauseOnHover={false}
+        theme="colored"
+        transition={Slide}
+/>
     </BrowserRouter>
   </Provider>
 );

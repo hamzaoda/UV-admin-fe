@@ -1,4 +1,3 @@
-// src/components/UserManagements/UserManagements.jsx
 import React, { useState, useEffect } from 'react';
 import './UserManagements.css';
 import useApi from '../../hooks/useApi';
@@ -8,6 +7,7 @@ function UserManagements() {
     const [currentPage, setCurrentPage] = useState(0); // 0-based index for react-paginate
     const usersPerPage = 9; // Number of users per page
     const [users, setUsers] = useState([]); // State to store fetched users
+    const [isSendingEmail, setIsSendingEmail] = useState(false); // Loading state for sending email
     const { callApi, isLoading, isError, error } = useApi();
 
     // Fields to display in the table
@@ -28,18 +28,16 @@ function UserManagements() {
                     setUsers(response.data); // Update the users state with fetched data
                 } else {
                     console.error('API Error:', response.message);
-                    // Optionally, handle the error in the UI
                 }
 
                 console.log('Fetched Users:', response);
             } catch (error) {
                 console.error('Fetch Users Error:', error);
-                // Optionally, handle the error in the UI
             }
         };
 
         fetchUsers();
-    }, [callApi]); // Added callApi as a dependency
+    }, [callApi]);
 
     // Calculate total pages based on fetched users
     const totalPages = Math.ceil(users.length / usersPerPage);
@@ -55,6 +53,7 @@ function UserManagements() {
 
     // Handle send email button click
     const handleSendEmail = async () => {
+        setIsSendingEmail(true); // Set loading to true
         try {
             const response = await callApi({
                 url: '/cms/send-email',
@@ -66,23 +65,36 @@ function UserManagements() {
 
             if (!response.isSuccess) {
                 console.error('API Error:', response.message);
-                // Optionally, handle the error in the UI
             }
         } catch (error) {
             console.error('Send Email Error:', error);
-            // Optionally, handle the error in the UI
+        } finally {
+            setIsSendingEmail(false); // Set loading to false
         }
     };
 
     return (
         <div className="user-managements-container">
+            {isSendingEmail && (
+                <div className="loading-overlay">
+                    <div className="loading-spinner"></div>
+                </div>
+            )}
+
             <div className='user-managements-header-container'>
                 <select className='user-managements-select'>
                     <option value="Welcome">Welcome</option>
                 </select>
                 <h1>User Management</h1>
-                <button className='user-managements-btn' onClick={handleSendEmail}>Send Email</button>
+                <button
+                    className='user-managements-btn'
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail} // Disable button while sending email
+                >
+                    {isSendingEmail ? 'Sending...' : 'Send Email'}
+                </button>
             </div>
+
             <table className="user-managements-table">
                 <thead>
                     <tr>
