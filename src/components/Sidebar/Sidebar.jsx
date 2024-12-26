@@ -31,6 +31,42 @@ const menuItems = [
         type: 'link',
         path: '/email-managements', // Added path
     },
+    {
+        id: 'ProductManagements',
+        name: 'Product Managements',
+        icon: <FaVoicemail />,
+        type: 'link',
+        path: '/product-managements', // Added path
+    },
+    {
+        id: 'AddProduct',
+        name: 'Add Product',
+        icon: <FaVoicemail />,
+        type: 'link',
+        path: '/add-product', // Added path
+    },
+    {
+        id: 'AddProperties',
+        name: 'Add Properties',
+        icon: <FaVoicemail />,
+        type: 'link',
+        path: '/add-properties', // Added path
+    },
+    {
+        id: 'TransactionManagements',
+        name: 'Transaction Managements',
+        icon: <FaVoicemail />,
+        type: 'link',
+        path: '/transaction-managements', // Added path
+    },
+    {
+        id: 'OrderManagements',
+        name: 'Order Managements',
+        icon: <FaVoicemail />,
+        type: 'link',
+        path: '/order-managements', // Added path
+    },
+
 ];
 
 function Sidebar() {

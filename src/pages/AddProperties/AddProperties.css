@@ -1,0 +1,169 @@
+/* src/pages/AddProperties/AddProperties.css */
+
+.add-properties-container {
+    border-radius: 8px;
+    width: 100%;
+    transition: opacity 0.15s ease-in-out; /* Adjust duration as needed */
+    opacity: 1;
+
+}
+.add-properties-container.re-rendering {
+    opacity: 0;
+}
+
+
+
+.back-link {
+    text-align: right;
+}
+
+.back-link a {
+    color: #2196f3;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.back-link a:hover {
+    color: #006cc5;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--fourth-color);
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    font-weight: bold;
+    background-color: var(--third-color);
+
+}
+
+.tab-button:hover {
+    background-color: var(--third-color);
+}
+
+.tab-content {
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow2);
+    overflow-y: auto;
+    max-height: 25rem;
+}
+
+.property-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.property-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.property-item:last-child {
+    border-bottom: none;
+}
+
+.property-item span {
+    font-size: 1rem;
+    color: #333333;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.save-btn {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.save-btn:hover {
+    background-color: #43a047;
+}
+
+.cancel-btn {
+    background-color: var(--danger-color);
+    color: #ffffff;
+}
+
+.cancel-btn:hover {
+    background-color: rgb(199, 0, 0);
+}
+
+.add-new-property {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 0.5rem;
+}
+
+.new-property-input {
+    flex: 1;
+}
+
+.add-btn {
+    background-color: #2196f3;
+    width: 6.5rem;
+}
+
+.add-btn:hover {
+    background-color: #006cc5;
+}
+
+.add-properties-edit-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.add-properties-save-cancel-btn-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-input {
+    width: 100% !important;
+}
+
+.edit-btn {
+    color: var(--third-color, #ff9800);
+    background-color: rgb(255, 223, 200);
+    width: 3rem;
+
+}
+
+.edit-btn:hover {
+    color: white;
+    background-color: var(--third-color, #ff9800);
+}
+
+.delete-btn {
+    color: var(--danger-color, #f44336);
+    background-color: rgb(255, 200, 200);
+    width: 3rem;
+}
+
+.delete-btn:hover {
+    color: white;
+    background-color: var(--danger-color, #f44336);
+}

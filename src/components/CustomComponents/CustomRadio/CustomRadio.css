@@ -1,0 +1,28 @@
+.radio-wrapper-16 label {
+    background: #fff;
+    padding: 6px 12px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: #EDEDED 0 0 0 1px inset, rgba(0, 0, 0, 0.05) 0 1px 2px 0;
+    display: inline-block;
+}
+
+.radio-wrapper-16 label:hover {
+    background: rgba(0, 0, 0, 0.03);
+    box-shadow: #CFCFCF 0 0 0 1px inset, rgba(0, 0, 0, 0.1) 0 1px 2px;
+}
+
+.radio-wrapper-16 input {
+    appearance: none;
+    display: none;
+}
+
+.radio-wrapper-16 input:focus {
+    outline: none;
+}
+
+.radio-wrapper-16 input:checked~label {
+    box-shadow: #0B88FF 0 0 0 2px inset, rgba(0, 0, 0, 0.1) 0 1px 2px 1px;
+}

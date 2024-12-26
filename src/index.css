@@ -1,6 +1,11 @@
+/* Import external stylesheets */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import './css/InputFile.css';
+/* Assuming this contains styles for input[type="file"] */
 
-
+/* -------------------------------------------------- */
+/* Root variables for consistent theming */
+/* -------------------------------------------------- */
 :root {
     --primary-color: #20180f;
     --secondary-color: #471f0b;
@@ -10,50 +15,74 @@
     --sixth-color: #ffe1c9;
 
     --danger-color: #d52027;
-    --success-color:#20d565;
-    --box-shadow1: rgba(255, 186, 24, 0.3) 0px 7px 15px 0px !important;
-    --box-shadow2: 0 0 20px color-mix(in srgb, var(--third-color), transparent 80%);
+    --success-color: #20d565;
 
-    --nav-border: solid 0.1rem var(--secondary-color);
-    --nav-border-hover: solid 0.1rem rgba(255, 255, 255, 0.3);
+    --box-shadow-primary: rgba(255, 186, 24, 0.3) 0px 7px 15px 0px;
+    --box-shadow-secondary: 0 0 20px color-mix(in srgb, var(--third-color), transparent 80%);
+
+    --nav-border-width: 0.1rem;
+    --nav-border-color: var(--secondary-color);
+    --nav-border-color-hover: rgba(255, 255, 255, 0.3);
+    --nav-border: solid var(--nav-border-width) var(--nav-border-color);
+    --nav-border-hover: solid var(--nav-border-width) var(--nav-border-color-hover);
 }
 
-::selection {
-    color: white;
-    /* Text color */
-    background-color: var(--fourth-color);
-    /* Background color */
+/* -------------------------------------------------- */
+/* Basic HTML element styles */
+/* -------------------------------------------------- */
+html,
+body {
+    overflow-x: hidden;
+    /* Prevent horizontal scrolling */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* Ensure padding and border are included in element's total width and height */
 }
 
 body {
     font-family: 'Poppins', sans-serif;
-    margin: 0;
 }
 
+/* Selection styling */
+::selection {
+    color: white;
+    background-color: var(--fourth-color);
+}
+
+/* -------------------------------------------------- */
+/* Typography */
+/* -------------------------------------------------- */
 h1 {
     color: var(--primary-color);
     font-weight: bold;
-    margin: 0;
     margin-bottom: 1rem;
     text-align: center;
 }
 
+h2 {
+    margin-bottom: 1rem;
+}
+
+/* -------------------------------------------------- */
+/* Table styles */
+/* -------------------------------------------------- */
 table {
     width: 100%;
+    /* Use percentage for responsiveness */
     border-collapse: collapse;
     background-color: white;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: var(--box-shadow2);
+    box-shadow: var(--box-shadow-secondary);
 }
-
 
 table th,
 table td {
-    text-align: left;
     padding: 12px;
     border-bottom: 1px solid var(--sixth-color);
     color: var(--primary-color);
+    text-align: left;
 }
 
 table th {
@@ -61,107 +90,115 @@ table th {
     color: white;
     font-weight: bold;
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: 0.75rem;
+    /* Use rem for font sizes */
 }
 
 table tr {
-    transition: 0.3s;
+    transition: background-color 0.3s ease-in-out;
+    /* Add easing for smoother transition */
 }
-
 
 table tr:hover {
     background-color: color-mix(in srgb, var(--fourth-color), transparent 90%);
 }
 
-select, input, textarea, option {
+/* -------------------------------------------------- */
+/* Form element styles */
+/* -------------------------------------------------- */
+select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
     box-sizing: border-box;
     width: 16rem;
     height: 2.5rem;
-    display: inline-block;
-    border: solid 1px rgb(221, 221, 221);
-    margin-bottom: 1rem;
+    border: 0.12rem solid rgb(221, 221, 221);
+    /* Use variable for border width */
     border-radius: 0.3rem;
-    padding: 0 0 0 1rem;
-    transition: border-color 0.5s;
+    padding-left: 1rem;
+    transition: border-color 0.3s ease-in-out;
+    /* Add easing */
     font-size: 1rem;
-    border-width: 0.12rem;
+    display: inline-block;
+    /* Consistent display */
 }
 
-select{
+select {
     padding-left: 0.7rem;
+    /* Reset specific padding */
+    -webkit-appearance: none;
+    /* Remove default browser styling */
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position-x: calc(100% - 0.5rem);
+    background-position-y: center;
 }
 
 textarea {
     width: 34rem;
     height: 19rem;
-    min-height: 2.5rem; /* Minimum height constraint */
+    min-height: 2.5rem;
     max-height: 19rem;
-    padding: 0.5rem;
-    padding-left: 1rem; /* Add vertical padding */
+    padding: 0.5rem 1rem;
+    /* Apply consistent padding */
     resize: none;
     font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
-    text-align: center;
+    font-family: inherit;
+    /* Inherit font from body */
+    text-align: left;
+    /* Improve text alignment in textarea */
 }
 
+/* Option styles within select */
 option {
-    background-color: #ffffff; /* Dropdown background color */
-    color: #333; /* Text color */
-    padding: 0;
+    background-color: #ffffff;
+    color: #333;
+    padding: 0.5rem;
+    /* Add padding for better visual spacing */
 }
+
 option:hover {
-    background-color: var(--secondary-color); /* Dropdown background color */
-    color: white; /* Text color */
+    background-color: var(--secondary-color);
+    color: white;
 }
 
-
-
-input:hover, select:hover, textarea:hover {
+/* Form element hover and focus states */
+input:hover,
+select:hover,
+textarea:hover {
     border-color: var(--fourth-color);
 }
 
-input:focus, select:focus, textarea:focus {
-    border-color: var(--third-color);;
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--third-color);
     outline: none;
 }
 
+/* -------------------------------------------------- */
+/* Button styles */
+/* -------------------------------------------------- */
 button {
-    display: flex;
-    align-items: center; /* Centers text vertically */
-    justify-content: center; /* Centers text horizontally */
+    display: inline-flex;
+    /* Use inline-flex for better alignment control */
+    align-items: center;
+    justify-content: center;
     height: 2.5rem;
-    width: 6.5rem; /* Adjust width as needed */
-    text-align: center;
+    width: 6.5rem;
     border: none;
-    background: var(--fourth-color);
+    background-color: var(--fourth-color);
     color: white;
     border-radius: 0.3rem;
-    transition: all 0.5s;
+    transition: background-color 0.3s ease-in-out;
+    /* More specific transition */
     font-size: 1rem;
     cursor: pointer;
-}
-
-.button-important{
-    background-color: var(--secondary-color);
-}
-
-.button-important:hover{
-    background-color: var(--primary-color);
-}
-
-.button-danger{
-    background-color: #af1e1e;
-}
-
-.button-danger:hover{
-    background-color: var(--danger-color);
-}
-.button-success{
-    background-color: var(--success-color);
-}
-
-.button-success:hover{
-    background-color: #1eaf56;
 }
 
 button:hover {
@@ -173,15 +210,49 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.button-{
-
+/* Specific button variations */
+.button-important {
+    background-color: var(--secondary-color);
 }
 
-label{
+.button-important:hover {
+    background-color: var(--primary-color);
+}
+
+.button-danger {
+    background-color: #af1e1e;
+}
+
+.button-danger:hover {
+    background-color: var(--danger-color);
+}
+
+.button-success {
+    background-color: var(--success-color);
+}
+
+.button-success:hover {
+    background-color: #1eaf56;
+}
+
+/* -------------------------------------------------- */
+/* Layout and utility classes */
+/* -------------------------------------------------- */
+label {
     display: block;
+    /* Make labels take full width */
+    margin-bottom: 0.5rem;
+    /* Add some spacing below labels */
 }
 
-.d-flex{
+.d-flex {
     display: flex;
+    align-items: center;
     gap: 2rem;
+    box-sizing: border-box;
+}
+
+.w-100 {
+    width: 100% !important;
+    /* Use sparingly, consider alternatives */
 }

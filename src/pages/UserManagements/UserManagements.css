@@ -2,12 +2,12 @@
     position: relative;
     width: 75%;
     display: flex;
-    padding: 2rem 0;
     box-sizing: border-box;
     flex-direction: column;
     justify-content: start;
     align-items: center;
     height: calc(100vh - 2rem);
+    width: 100% ;
 }
 
 .user-managements-header-container{
@@ -30,7 +30,6 @@
 
 .error-message {
     color: red;
-    text-align: center;
 }
 
 /* Pagination Styles */

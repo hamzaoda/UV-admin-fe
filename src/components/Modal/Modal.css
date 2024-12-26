@@ -1,0 +1,69 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation-duration: 0.4s;
+    animation-fill-mode: forwards;
+}
+
+/* Modal container with transition for width */
+.modal-container {
+    background-color: white;
+    border-radius: 8px;
+    /* Remove width: fit-content */
+    max-width: 600px;
+    /* Default max-width */
+    width: auto;
+    height: auto;
+    /* Allow the width to adjust based on content */
+    padding: 2rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    /* Ensure content stacks vertically */
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation-duration: 0.4s;
+    animation-fill-mode: forwards;
+    transition: max-width 0.4s ease;
+    /* Animate max-width */
+}
+
+.modal-container.state-a {
+    max-width: 600px;
+    /* Width for state-a (e.g., reset form) */
+}
+
+.modal-container.state-b {
+    max-width: 800px;
+    /* Width for state-b (e.g., success message) */
+}
+
+/* Close button styling */
+.modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #555;
+    width: 2rem;
+    height: fit-content;
+    transition: all 0.3s ease;
+}
+
+.modal-close-button:hover {
+    color: #ff0000;
+    background-color: #55555500;
+}

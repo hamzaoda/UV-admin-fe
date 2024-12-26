@@ -1,0 +1,75 @@
+/* OrderDetailsModal.css */
+
+.order-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.order-details-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color, #333);
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--secondary-text-color, #555);
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal-btn:hover {
+    color: var(--fourth-color, #2196f3);
+}
+
+.order-details-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.order-details-body p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: var(--secondary-text-color, #555);
+}
+
+.order-details-body h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: var(--primary-color, #333);
+}
+
+.products-table-container {
+    overflow-x: auto;
+}
+
+.products-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.products-table-container th,
+.products-table-container td {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.products-table-container th {
+    background-color: var(--secondary-color, #555);
+    color: white;
+    text-transform: uppercase;
+}
+
+.product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}

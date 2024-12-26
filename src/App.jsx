@@ -7,6 +7,12 @@ import { selectIsAuthenticated } from './redux/selectors';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import Layout from './components/Layout/Layout';
 import './App.css';
+import ProductManagements from './pages/ProductManagements/ProductManagements';
+import EditProduct from './pages/EditProduct/EditProduct';
+import AddProduct from './pages/AddProduct/AddProduct';
+import AddProperties from './pages/AddProperties/AddProperties';
+import TransactionManagements from './pages/TransactionManagements/TransactionManagements';
+import OrderManagements from './pages/OrderManagements/OrderManagements';
 
 // Lazy-loaded components for better performance
 const Login = lazy(() => import('./pages/Login/Login'));
@@ -41,6 +47,13 @@ const App = () => {
           <Route element={<Layout />}>
             <Route path="/user-managements" element={<UserManagements />} />
             <Route path="/email-managements" element={<EmailManagements />} />
+            <Route path="/product-managements" element={<ProductManagements />} />
+            <Route path="/edit-product/:productId" element={<EditProduct />} /> {/* Add the route for editing */}
+            <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/add-properties" element={<AddProperties />} />
+            <Route path="/transaction-managements" element={<TransactionManagements />} />
+            <Route path="/order-managements" element={<OrderManagements />} />
+
             {/* Add more protected routes here */}
           </Route>
         </Route>

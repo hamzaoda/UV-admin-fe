@@ -1,0 +1,315 @@
+/* General Container */
+.add-product-main-container {
+    width: 1200px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.manage-properties-link {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: absolute;
+    right: 0;
+    top: 0.2rem;
+}
+
+.manage-properties-link a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.manage-properties-link a:hover {
+    text-decoration: underline;
+}
+
+/* Form Sections */
+.form-section {
+    background-color: #f9f9f9;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+    margin-bottom: 1rem;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+
+/* Form Groups */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: 0.5rem;
+    border: 0.12rem solid #ccc;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.flex-half input {
+    width: 100% !important;
+}
+
+.flex-half {
+    flex: 1;
+}
+
+.flex-half:last-child {
+    margin-right: 0;
+}
+
+
+.property-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.property-input {
+    width: 20rem !important;
+}
+
+small {
+    margin-top: 0.5rem;
+}
+
+.media-items-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.media-item {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.uploaded-files {
+    display: flex;
+    gap: 0.97rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    justify-content: start;
+    box-sizing: border-box;
+}
+
+.uploaded-file {
+    position: relative;
+    width: 12.5rem;
+    height: 12.5rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.img-x-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: red;
+    color: #fff;
+    border: none;
+    border-radius: 25%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.img-x-btn:hover {
+    background-color: darkred;
+}
+
+/* Video Upload Styles */
+.uploaded-file video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Combinations Table */
+.combinations-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.combinations-table th,
+.combinations-table td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.combinations-table th {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
+.x-btn {
+    margin: auto;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.x-btn:hover {
+    background-color: #c82333;
+}
+
+/* Tags Section */
+.flex-form-group {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    text-align: start;
+    flex-wrap: wrap;
+    gap: 2.5rem 5rem;
+    margin-bottom: 1rem;
+}
+
+.required {
+    color: red;
+    margin-left: 0.25rem;
+}
+
+.input-error {
+    border-color: red !important;
+}
+
+.error-message {
+    width: 100%;
+    color: red;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* Submit Button */
+.submit-section {
+    margin-top: 2rem;
+}
+
+.submit-button {
+    width: 100%;
+    height: 3rem;
+    margin: auto;
+    font-size: 1.5rem;
+}
+
+.add-property-btn {
+    margin-bottom: -0.4rem;
+}
+
+.main-image-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 123, 255, 0.8);
+    color: #fff;
+    text-align: center;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+    transition: all 1s;
+}
+
+.add-product-properties-text-container {
+    position: relative;
+}
+
+.flex-form-group .checkbox-wrapper {
+    justify-content: start;
+}
+
+.add-product-h1-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    
+    /* Vertically centers items */
+    position: relative;
+}
+
+.return-link {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    justify-self: end;
+    align-self: center;
+    margin-top: -0.5rem;
+}
+
+.return-link:hover {
+    text-decoration: underline;
+}
+
+/* Optional: Style disabled options */
+.property-input option:disabled {
+    color: #ccc;
+}
+
+
+
+
+
+
+
+
+
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

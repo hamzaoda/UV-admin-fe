@@ -1,0 +1,34 @@
+.slide-in {
+    animation: slideIn 0.5s;
+}
+
+.slide-out {
+    animation: slideOut 0.5s;
+}
+
+
+/* Animation for modal slide-in */
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Animation for modal slide-out */
+@keyframes slideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+}
