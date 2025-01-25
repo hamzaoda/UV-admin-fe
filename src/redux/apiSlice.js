@@ -15,7 +15,7 @@ export const apiSlice = createApi({
             if (token) {
                 headers.set('Authorization', `${token}`);
             }
-            headers.set('Content-Type', 'application/json');
+            // headers.set('Content-Type', 'application/json'); // Removed to let FormData set it
             return headers;
         },
     }),
@@ -62,8 +62,49 @@ export const apiSlice = createApi({
                 }
             },
         }),
-        // Add other endpoints if necessary
+        makeFormDataRequest: builder.mutation({ // New mutation for form data
+            query: ({ url, method, dataReq }) => ({
+                url,
+                method,
+                body: dataReq,
+            }),
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                const { url, method, successMessage, errorMessage } = arg;
+                try {
+                    const { data } = await queryFulfilled;
+
+                    if (url === '/login') {
+                        const token = data.data.token;
+                        const user = data.data;
+                        if (token) {
+                            dispatch(setCredentials({ token, user }));
+                            localStorage.setItem('authToken', token);
+                            console.log('Login successful. Token stored:', token);
+                        } else {
+                            console.error('Token not found in login response:', data);
+                        }
+                    }
+
+                    // **Conditional Success Toast**
+                    if (successMessage && method.toUpperCase() !== 'GET') {
+                        showSuccess(successMessage);
+                        console.log('Success:', successMessage);
+                    }
+                } catch (err) {
+                    console.error('API Error:', err);
+                    if (errorMessage) {
+                        const errorMsg = err?.error?.data?.message || errorMessage;
+                        showError(errorMsg);
+                    }
+
+                    if (err?.data?.status === 401) {
+                        dispatch(logout());
+                        showError('Session expired! Please log in again.');
+                    }
+                }
+            },
+        }),
     }),
 });
 
-export const { useMakeRequestMutation } = apiSlice;
+export const { useMakeRequestMutation, useMakeFormDataRequestMutation } = apiSlice;

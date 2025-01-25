@@ -1,19 +1,19 @@
 // ProductManagements.jsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactPaginate from 'react-paginate';
-import { FaTrash, FaEdit, FaPlus, FaFilter, FaSearch } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaPlus, FaFilter, FaSearch, FaEye } from 'react-icons/fa';
 import CustomCheckbox from '../../components/CustomComponents/CustomCheckbox/CustomCheckbox';
 import CustomRadio from '../../components/CustomComponents/CustomRadio/CustomRadio';
 import Modal from '../../components/Modal/Modal'; // Import your Modal component
 import '../ManagementsStyles.css'; // Import the consolidated CSS
 import { useNavigate } from 'react-router-dom';
 import useApi from '../../hooks/useApi'; // Import the useApi hook (assuming it exists)
-import { useDispatch } from 'react-redux'; // Import useDispatch
-import { setProductForEdit } from '../../redux/editProductSlice'; // Import the action
+import { debounce } from 'lodash'; // Import debounce from lodash or similar utility
+import { toast } from 'react-toastify'; // Import toast for notifications
+import ViewProduct from '../../components/ViewProduct/ViewProduct'; // Import the new ViewProduct component
 
 function ProductManagements() {
     const navigate = useNavigate();
-    const dispatch = useDispatch(); // Initialize useDispatch
 
     const { callApi, isLoading: apiLoading } = useApi(); // Use the useApi hook
 
@@ -49,113 +49,94 @@ function ProductManagements() {
     const [tempFilterTags, setTempFilterTags] = useState([...filterTags]);
     const [tempFilterPrice, setTempFilterPrice] = useState({ ...filterPrice });
 
-    const [itemsPerPage, setItemsPerPage] = useState(2);
+    const [itemsPerPage, setItemsPerPage] = useState(10); // More reasonable default
     const [currentPage, setCurrentPage] = useState(0);
 
     // Modal state
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    const [isViewProductModalOpen, setIsViewProductModalOpen] = useState(false);
+    const [viewProductId, setViewProductId] = useState(null);
 
-    const handleEditProduct = (product) => {
-        dispatch(setProductForEdit(product)); // Dispatch the action with product data
-        navigate(`/edit-product/${product._id}`); // You can still use the ID in the URL if needed for routing
-    };
+    const handleEditProduct = useCallback((product) => {
+        navigate(`/edit-product/${product._id}`);
+    }, [navigate]);
 
+    // New handleViewProduct function
+    const handleViewProduct = useCallback((productId) => {
+        setViewProductId(productId);
+        setIsViewProductModalOpen(true);
+    }, [navigate]);
 
-    // Fetch products from API
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setIsInitialLoading(true);
-            setIsError(false);
-            try {
-                const response = await callApi({
-                    url: `/products/list?search=${searchTerm}&skip=${currentPage * itemsPerPage}&limit=${itemsPerPage}&sort=asc`,
-                    method: 'GET',
-                    successMessage: 'Products fetched successfully!',
-                    errorMessage: 'Error fetching products.',
-                });
+    const handleCloseViewProductModal = useCallback(() => {
+        setIsViewProductModalOpen(false);
+        setViewProductId(null);
+    }, []);
 
-                if (response.isSuccess && response.data && response.data.products) {
-                    setProducts(response.data.products);
-                    setTotalProducts(response.data.pagination.total);
-                } else {
-                    console.error('API Error:', response.message);
-                    setIsError(true);
-                    setErrorMessage(response.message || 'Failed to fetch products');
-                }
-            } catch (error) {
-                console.error('Fetch Products Error:', error);
-                setIsError(true);
-                setErrorMessage('Error fetching products.');
-            } finally {
-                setIsInitialLoading(false);
-            }
-        };
+    // Fetch products from API with filters and pagination
+    const fetchProducts = useCallback(async (currentSearchTerm = '') => {
+        setIsInitialLoading(true);
+        setIsError(false);
+        let url = `/products/list?skip=${currentPage * itemsPerPage}&limit=${itemsPerPage}&sort=asc`;
 
-        fetchProducts();
-    }, [callApi, currentPage, itemsPerPage, searchTerm]);
-
-    // Filtering (client-side, consider server-side for large datasets)
-    const filteredProducts = useMemo(() => {
-        let filtered = [...products]; // Start with all fetched products
-
-        // Filter Sale
+        if (currentSearchTerm) {
+            url += `&search=${currentSearchTerm}`;
+        }
         if (filterSale === 'yes') {
-            filtered = filtered.filter((product) => product.sale > 0); // Assuming sale is a percentage or discount
+            url += '&sale=true';
         } else if (filterSale === 'no') {
-            filtered = filtered.filter((product) => !product.sale || product.sale === 0);
+            url += '&sale=false';
         }
-
-        // Filter Date Added (assuming createdAt field exists in your product data)
-        if (filterDate.from && filterDate.to) {
-            const from = new Date(filterDate.from);
-            const to = new Date(filterDate.to);
-            filtered = filtered.filter(
-                (product) =>
-                    new Date(product.createdAt) >= from &&
-                    new Date(product.createdAt) <= to
-            );
+        if (filterDate.from) {
+            url += `&dateFrom=${filterDate.from}`;
         }
-
-        // Filter Quantity (based on the first property's sizes)
+        if (filterDate.to) {
+            url += `&dateTo=${filterDate.to}`;
+        }
         if (filterQuantity === 'inStock') {
-            filtered = filtered.filter((product) =>
-                product.properties && product.properties.some(prop =>
-                    prop.sizes.some(size => size.quantity > 0)
-                )
-            );
+            url += '&quantityStatus=inStock';
         } else if (filterQuantity === 'lowStock') {
-            filtered = filtered.filter((product) =>
-                product.properties && product.properties.some(prop =>
-                    prop.sizes.some(size => size.quantity > 0 && size.quantity <= 20)
-                )
-            );
+            url += '&quantityStatus=lowStock';
         } else if (filterQuantity === 'outOfStock') {
-            filtered = filtered.filter((product) =>
-                product.properties && product.properties.every(prop =>
-                    prop.sizes.every(size => size.quantity === 0)
-                )
-            );
+            url += '&quantityStatus=outOfStock';
         }
-
-        // Filter Tags
         if (filterTags.length > 0) {
-            filtered = filtered.filter((product) =>
-                product.tags.some(tag => filterTags.includes(tag))
-            );
+            url += `&tags=${filterTags.join(',')}`;
+        }
+        if (filterPrice.from) {
+            url += `&priceFrom=${filterPrice.from}`;
+        }
+        if (filterPrice.to) {
+            url += `&priceTo=${filterPrice.to}`;
         }
 
-        // Filter Price
-        if (filterPrice.from && filterPrice.to) {
-            const from = Number(filterPrice.from);
-            const to = Number(filterPrice.to);
-            filtered = filtered.filter(
-                (product) => product.price >= from && product.price <= to
-            );
-        }
+        try {
+            const response = await callApi({
+                url,
+                method: 'GET',
+                errorMessage: 'Error fetching products.',
+            });
 
-        return filtered;
+            if (response.isSuccess && response.data && response.data.products) {
+                setProducts(response.data.products);
+                setTotalProducts(response.data.pagination.total);
+            } else {
+                console.error('API Error:', response.message);
+                setIsError(true);
+                setErrorMessage(response.message || 'Failed to fetch products');
+                toast.error(response.message || 'Failed to fetch products');
+            }
+        } catch (error) {
+            console.error('Fetch Products Error:', error);
+            setIsError(true);
+            setErrorMessage('Error fetching products.');
+            toast.error('Error fetching products.');
+        } finally {
+            setIsInitialLoading(false);
+        }
     }, [
-        products,
+        callApi,
+        currentPage,
+        itemsPerPage,
         filterSale,
         filterDate,
         filterQuantity,
@@ -163,25 +144,36 @@ function ProductManagements() {
         filterPrice,
     ]);
 
-    // Pagination
-    const pageCount = Math.ceil(totalProducts / itemsPerPage);
+    // Debounced function to fetch products
+    const debouncedFetchProducts = useCallback(
+        debounce((term) => {
+            // This will be called after 1 second of no typing
+            setCurrentPage(0); // Reset page on new search
+            fetchProducts(term); // Call fetchProducts with the search term
+        }, 750),
+        [fetchProducts]
+    );
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
 
     // Handlers
-    const handleSelectAll = (e) => {
+    const handleSelectAll = useCallback((e) => {
         if (e.target.checked) {
             setSelected(products.map((product) => product._id));
         } else {
             setSelected([]);
         }
-    };
+    }, [products]);
 
-    const handleSelect = (id) => {
+    const handleSelect = useCallback((id) => {
         setSelected((prev) =>
             prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
-    };
+    }, []);
 
-    const handleDeleteSelected = async () => {
+    const handleDeleteSelected = useCallback(async () => {
         if (selected.length) {
             if (
                 window.confirm(
@@ -189,68 +181,64 @@ function ProductManagements() {
                 )
             ) {
                 setOperationLoading(true);
-                const updatedProducts = products.filter(product => !selected.includes(product._id));
-                setProducts(updatedProducts); // Optimistic update
+                const selectedSet = new Set(selected);
+                const previousProducts = products;
+                setProducts(products.filter(product => !selectedSet.has(product._id))); // Optimistic update
 
                 try {
                     const response = await callApi({
-                        url: '/products/bulk-delete', // Or your bulk delete endpoint
-                        method: 'POST',
+                        url: '/products/delete-multiple',
+                        method: 'DELETE',
                         dataReq: { productIds: selected },
-                        successMessage: `${selected.length} products deleted successfully!`,
                         errorMessage: 'Error deleting selected products.',
                     });
 
                     if (!response.isSuccess) {
                         console.error('API Error:', response.message);
-                        // Revert on failure
-                        const revertedProducts = [...updatedProducts]; // Create a copy to avoid mutation issues
-                        const productsToAddBack = products.filter(product => selected.includes(product._id));
-                        revertedProducts.push(...productsToAddBack);
-                        setProducts(revertedProducts.sort((a, b) => a.createdAt < b.createdAt ? -1 : 1)); // Re-sort if needed
-                        alert(response.message);
+                        setProducts(previousProducts); // Revert on failure
+                        toast.error(response.message);
                     } else {
                         setSelected([]);
+                        toast.success(`${selected.length} products deleted successfully!`);
                     }
                 } catch (error) {
                     console.error('Error deleting products:', error);
-                    // Revert on failure
-                    const revertedProducts = [...updatedProducts];
-                    const productsToAddBack = products.filter(product => selected.includes(product._id));
-                    revertedProducts.push(...productsToAddBack);
-                    setProducts(revertedProducts.sort((a, b) => a.createdAt < b.createdAt ? -1 : 1));
-                    alert('An unexpected error occurred while deleting products.');
+                    setProducts(previousProducts); // Revert on failure
+                    toast.error('An unexpected error occurred while deleting products.');
                 } finally {
                     setOperationLoading(false);
                 }
             }
         }
-    };
+    }, [callApi, selected, products]);
 
-    const handleAddNew = () => {
+    const handleAddNew = useCallback(() => {
         navigate('/add-product'); // Navigate to the desired route
-    };
+    }, [navigate]);
 
-    const handlePageChange = ({ selected }) => setCurrentPage(selected);
+    const handlePageChange = useCallback(({ selected }) => {
+        setCurrentPage(selected);
+    }, []);
 
     // Clear all filters
-    const clearFilters = () => {
+    const clearFilters = useCallback(() => {
         setFilterSale('all');
         setFilterDate({ from: '', to: '' });
-        setFilterQuantity('all'); // Updated to reset to 'all'
+        setFilterQuantity('all');
         setFilterTags([]);
         setFilterPrice({ from: '', to: '' });
 
-        // Also reset temporary filters
         setTempFilterSale('all');
         setTempFilterDate({ from: '', to: '' });
-        setTempFilterQuantity('all'); // Updated to reset to 'all'
+        setTempFilterQuantity('all');
         setTempFilterTags([]);
         setTempFilterPrice({ from: '', to: '' });
-    };
+        setCurrentPage(0); // Reset to first page on filter clear
+        fetchProducts(); // Fetch products after clearing filters
+    }, [fetchProducts]);
 
     // Handle filter form submission
-    const applyFilters = (e) => {
+    const applyFilters = useCallback((e) => {
         e.preventDefault();
         setFilterSale(tempFilterSale);
         setFilterDate(tempFilterDate);
@@ -258,53 +246,67 @@ function ProductManagements() {
         setFilterTags(tempFilterTags);
         setFilterPrice(tempFilterPrice);
         setIsFilterModalOpen(false);
-        setCurrentPage(0); // Reset to first page on filter
-    };
+        setCurrentPage(0); // Reset to first page on filter apply
+        fetchProducts(); // Fetch products after applying filters
+    }, [tempFilterDate, tempFilterPrice, tempFilterQuantity, tempFilterSale, tempFilterTags, fetchProducts]);
 
     // Handle tag selection
-    const handleTagChange = (e) => {
+    const handleTagChange = useCallback((e) => {
         const { value, checked } = e.target;
-        if (checked) {
-            setTempFilterTags((prev) => [...prev, value]);
-        } else {
-            setTempFilterTags((prev) => prev.filter((tag) => tag !== value));
-        }
+        setTempFilterTags((prev) =>
+            checked ? [...prev, value] : prev.filter((tag) => tag !== value)
+        );
+    }, []);
+
+    const handleSearchChange = useCallback((value) => {
+        setSearchTerm(value);
+        debouncedFetchProducts(value); // Call the debounced fetch
+    }, [debouncedFetchProducts]);
+
+    const handleInputChange = (e) => {
+        handleSearchChange(e.target.value);
     };
 
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-        setCurrentPage(0); // Reset page on search
-    };
-
-    const handleDeleteSingleProduct = async (productId) => {
+    const handleDeleteSingleProduct = useCallback(async (productId) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
             setOperationLoading(true);
-            const originalProducts = [...products]; // Keep a copy for potential rollback
-            const updatedProducts = products.filter(p => p._id !== productId);
-            setProducts(updatedProducts); // Optimistic update
+            const previousProducts = products;
+            setProducts(products.filter(p => p._id !== productId)); // Optimistic update
 
             try {
                 const response = await callApi({
-                    url: `/products/delete/${productId}`, // Or your delete endpoint
+                    url: `/products/delete/${productId}`,
                     method: 'DELETE',
-                    successMessage: 'Product deleted successfully!',
                     errorMessage: 'Error deleting product.',
                 });
 
                 if (!response.isSuccess) {
                     console.error('API Error:', response.message);
-                    setProducts(originalProducts); // Revert on failure
-                    alert(response.message);
+                    setProducts(previousProducts); // Revert on failure
+                    toast.error(response.message);
+                } else {
+                    toast.success('Product deleted successfully!');
                 }
             } catch (error) {
                 console.error('Error deleting product:', error);
-                setProducts(originalProducts); // Revert on failure
-                alert('An unexpected error occurred while deleting the product.');
+                setProducts(previousProducts); // Revert on failure
+                toast.error('An unexpected error occurred while deleting the product.');
             } finally {
                 setOperationLoading(false);
             }
         }
-    };
+    }, [callApi, products]);
+
+    const calculateTotalStock = useCallback((product) => {
+        if (!product.properties) return 0;
+        return product.properties.reduce((total, prop) => {
+            return total + prop.sizes.reduce((sum, size) => sum + size.quantity, 0);
+        }, 0);
+    }, []);
+
+    const filteredProducts = useMemo(() => products, [products]); // Now products are already filtered on the server
+
+    const pageCount = Math.ceil(totalProducts / itemsPerPage);
 
     if (isInitialLoading) {
         return <div>Loading products...</div>;
@@ -315,353 +317,383 @@ function ProductManagements() {
     }
 
     return (
-        <div className="managements-container slide-in">
+        <>
             <h1>Product Management</h1>
+            <div className="managements-container slide-in section-container">
 
-            {/* Controls */}
-            <div className="managements-controls">
+                {/* Controls */}
+                <div className="managements-controls">
 
-                {/* Left Controls: Items Per Page and Search */}
-                <div className="managements-left-controls">
-                    {/* Items Per Page */}
-                    <div className="managements-items-per-page">
-                        <label htmlFor="items-per-page">Show</label>
-                        <select
-                            id="items-per-page"
-                            value={itemsPerPage}
-                            onChange={(e) => {
-                                setItemsPerPage(Number(e.target.value));
-                                setCurrentPage(0); // Reset to first page
-                            }}
-                            disabled={operationLoading}
-                        >
-                            <option value={10}>10</option>
-                            <option value={25}>25</option>
-                            <option value={50}>50</option>
-                        </select>
-                    </div>
-
-                    {/* Search Input with Icon */}
-                    <div className="managements-search-input-container">
-                        <FaSearch className="managements-search-icon" />
-                        <input
-                            type="text"
-                            className="managements-search-input"
-                            placeholder="Search by product name..."
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            disabled={operationLoading}
-                        />
-                    </div>
-                </div>
-
-                {/* Right Controls: Filter Button, Delete Selected, Add New */}
-                <div className="managements-right-controls">
-                    {/* Filter Button */}
-                    <button
-                        className="managements-filter-btn"
-                        onClick={() => setIsFilterModalOpen(true)}
-                        title="Filter Products"
-                        disabled={operationLoading}
-                    >
-                        <FaFilter />
-                        <span className="managements-filter-btn-text">Filter</span>
-                    </button>
-
-                    {/* Delete Selected */}
-                    <button
-                        className={`managements-delete-selected-btn ${selected.length ? 'active' : ''}`}
-                        disabled={!selected.length || operationLoading}
-                        onClick={handleDeleteSelected}
-                        title="Delete Selected"
-                    >
-                        <FaTrash />
-                    </button>
-
-                    {/* Add New */}
-                    <button className="managements-add-new-btn" onClick={handleAddNew} disabled={operationLoading}>
-                        <FaPlus style={{ marginRight: '0.5rem' }} />
-                        Add
-                    </button>
-                </div>
-            </div>
-
-            {/* Filter Modal */}
-            {isFilterModalOpen && (
-                <Modal
-                    onClose={() => setIsFilterModalOpen(false)}
-                    contentState="filter-modal"
-                >
-                    <h2>Advanced Filters</h2>
-                    <form onSubmit={applyFilters} className="managements-filter-form">
-                        {/* Sale Filter */}
-                        <div className="managements-filter-group">
-                            <label htmlFor="filter-sale">Sale</label>
-                            <div className='managements-between-inputs'>
-                                <CustomRadio
-                                    id="filter-sale-all"
-                                    name="filter-sale"
-                                    value="all"
-                                    checked={tempFilterSale === 'all'}
-                                    onChange={(e) => {
-                                        setTempFilterSale(e.target.value);
-                                    }}
-                                    label="All"
-                                    disabled={operationLoading}
-                                />
-                                <CustomRadio
-                                    id="filter-sale-yes"
-                                    name="filter-sale"
-                                    value="yes"
-                                    checked={tempFilterSale === 'yes'}
-                                    onChange={(e) => {
-                                        setTempFilterSale(e.target.value);
-                                    }}
-                                    label="On Sale"
-                                    disabled={operationLoading}
-                                />
-                                <CustomRadio
-                                    id="filter-sale-no"
-                                    name="filter-sale"
-                                    value="no"
-                                    checked={tempFilterSale === 'no'}
-                                    onChange={(e) => {
-                                        setTempFilterSale(e.target.value);
-                                    }}
-                                    label="Not on Sale"
-                                    disabled={operationLoading}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Date Added Filter */}
-                        <div className="managements-filter-group">
-                            <label>Date Added</label>
-                            <div className="managements-between-inputs">
-                                <input
-                                    className='managements-filter-date'
-                                    type="date"
-                                    value={tempFilterDate.from}
-                                    onChange={(e) =>
-                                        setTempFilterDate({ ...tempFilterDate, from: e.target.value })
-                                    }
-                                    disabled={operationLoading}
-                                />
-                                <span>and</span>
-                                <input
-                                    className='managements-filter-date'
-                                    type="date"
-                                    value={tempFilterDate.to}
-                                    onChange={(e) =>
-                                        setTempFilterDate({ ...tempFilterDate, to: e.target.value })
-                                    }
-                                    disabled={operationLoading}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Quantity Filter */}
-                        <div className="managements-filter-group">
-                            <label>Quantity</label>
-                            <div className="managements-between-inputs">
-                                {/* Added "All" option here */}
-                                <CustomRadio
-                                    id="quantity-all"
-                                    name="filter-quantity"
-                                    value="all"
-                                    checked={tempFilterQuantity === 'all'}
-                                    onChange={(e) => setTempFilterQuantity(e.target.value)}
-                                    label="All"
-                                    disabled={operationLoading}
-                                />
-                                <CustomRadio
-                                    id="quantity-inStock"
-                                    name="filter-quantity"
-                                    value="inStock"
-                                    checked={tempFilterQuantity === 'inStock'}
-                                    onChange={(e) => setTempFilterQuantity(e.target.value)}
-                                    label="In Stock"
-                                    disabled={operationLoading}
-                                />
-                                <CustomRadio
-                                    id="quantity-lowStock"
-                                    name="filter-quantity"
-                                    value="lowStock"
-                                    checked={tempFilterQuantity === 'lowStock'}
-                                    onChange={(e) => setTempFilterQuantity(e.target.value)}
-                                    label="Low Stock"
-                                    disabled={operationLoading}
-                                />
-                                <CustomRadio
-                                    id="quantity-outOfStock"
-                                    name="filter-quantity"
-                                    value="outOfStock"
-                                    checked={tempFilterQuantity === 'outOfStock'}
-                                    onChange={(e) => setTempFilterQuantity(e.target.value)}
-                                    label="Out of Stock"
-                                    disabled={operationLoading}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Tag Filter */}
-                        <div className="managements-filter-group">
-                            <label>Tag</label>
-                            <div className="managements-between-inputs">
-                                { /* Assuming your product.tags is an array of strings */
-                                    [...new Set(products.flatMap(product => product.tags))].map(tag => (
-                                        <CustomCheckbox
-                                            key={tag}
-                                            id={`tag-${tag}`}
-                                            name="filter-tag"
-                                            value={tag}
-                                            checked={tempFilterTags.includes(tag)}
-                                            onChange={handleTagChange}
-                                            label={tag}
-                                            disabled={operationLoading}
-                                        />
-                                    ))
-                                }
-                            </div>
-                        </div>
-
-                        {/* Price Filter */}
-                        <div className="managements-filter-group">
-                            <label>Price</label>
-                            <div className="managements-between-inputs">
-                                <input
-                                    className='management-filter-price-input'
-                                    type="number"
-                                    min="0"
-                                    placeholder="From"
-                                    value={tempFilterPrice.from}
-                                    onChange={(e) =>
-                                        setTempFilterPrice({ ...tempFilterPrice, from: e.target.value })
-                                    }
-                                    disabled={operationLoading}
-                                />
-                                <span>and</span>
-                                <input
-                                    className='management-filter-price-input'
-                                    type="number"
-                                    min="0"
-                                    placeholder="To"
-                                    value={tempFilterPrice.to}
-                                    onChange={(e) =>
-                                        setTempFilterPrice({ ...tempFilterPrice, to: e.target.value })
-                                    }
-                                    disabled={operationLoading}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Filter Actions */}
-                        <div className="managements-filter-actions">
-                            <button type="submit" className="managements-apply-filters-btn" disabled={operationLoading}>
-                                Apply Filters
-                            </button>
-                            <button
-                                type="button"
-                                className="managements-clear-filters-btn"
-                                onClick={clearFilters}
+                    {/* Left Controls: Items Per Page and Search */}
+                    <div className="managements-left-controls">
+                        {/* Items Per Page */}
+                        <div className="managements-items-per-page">
+                            <label htmlFor="items-per-page">Show</label>
+                            <select
+                                id="items-per-page"
+                                value={itemsPerPage}
+                                onChange={(e) => {
+                                    setItemsPerPage(Number(e.target.value));
+                                    setCurrentPage(0); // Reset to first page
+                                }}
                                 disabled={operationLoading}
                             >
-                                Clear Filters
-                            </button>
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={25}>25</option>
+                                <option value={50}>50</option>
+                            </select>
                         </div>
-                    </form>
-                </Modal>
-            )}
 
-            {/* Product Table */}
-            <div className="managements-table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                <CustomCheckbox
-                                    id="select-all"
-                                    name="select-all"
-                                    value="select-all"
-                                    checked={
-                                        products.length > 0 &&
-                                        selected.length === products.length
+                        {/* Search Input with Icon */}
+                        <div className="managements-search-input-container">
+                            <FaSearch className="managements-search-icon" />
+                            <input
+                                type="text"
+                                className="managements-search-input"
+                                placeholder="Search by product name..."
+                                value={searchTerm}
+                                onChange={handleInputChange}
+                                disabled={operationLoading}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Right Controls: Filter Button, Delete Selected, Add New */}
+                    <div className="managements-right-controls">
+                        {/* Filter Button */}
+                        <button
+                            className="managements-filter-btn"
+                            onClick={() => setIsFilterModalOpen(true)}
+                            title="Filter Products"
+                            disabled={operationLoading}
+                        >
+                            <FaFilter />
+                            <span className="managements-filter-btn-text">Filter</span>
+                        </button>
+
+                        {/* Delete Selected */}
+                        <button
+                            className={`managements-delete-selected-btn ${selected.length ? 'active' : ''}`}
+                            disabled={!selected.length || operationLoading}
+                            onClick={handleDeleteSelected}
+                            title="Delete Selected"
+                        >
+                            <FaTrash />
+                        </button>
+
+                        {/* Add New */}
+                        <button className="managements-add-new-btn" onClick={handleAddNew} disabled={operationLoading}>
+                            <FaPlus style={{ marginRight: '0.5rem' }} />
+                            Add
+                        </button>
+                    </div>
+                </div>
+
+                {/* Filter Modal */}
+                {isFilterModalOpen && (
+                    <Modal
+                        onClose={() => setIsFilterModalOpen(false)}
+                        contentState="filter-modal"
+                    >
+                        <h2>Advanced Filters</h2>
+                        <form onSubmit={applyFilters} className="managements-filter-form">
+                            {/* Sale Filter */}
+                            <div className="managements-filter-group">
+                                <label htmlFor="filter-sale">Sale</label>
+                                <div className='managements-between-inputs'>
+                                    <CustomRadio
+                                        id="filter-sale-all"
+                                        name="filter-sale"
+                                        value="all"
+                                        checked={tempFilterSale === 'all'}
+                                        onChange={(e) => {
+                                            setTempFilterSale(e.target.value);
+                                        }}
+                                        label="All"
+                                        disabled={operationLoading}
+                                    />
+                                    <CustomRadio
+                                        id="filter-sale-yes"
+                                        name="filter-sale"
+                                        value="yes"
+                                        checked={tempFilterSale === 'yes'}
+                                        onChange={(e) => {
+                                            setTempFilterSale(e.target.value);
+                                        }}
+                                        label="On Sale"
+                                        disabled={operationLoading}
+                                    />
+                                    <CustomRadio
+                                        id="filter-sale-no"
+                                        name="filter-sale"
+                                        value="no"
+                                        checked={tempFilterSale === 'no'}
+                                        onChange={(e) => {
+                                            setTempFilterSale(e.target.value);
+                                        }}
+                                        label="Not on Sale"
+                                        disabled={operationLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Date Added Filter */}
+                            <div className="managements-filter-group">
+                                <label>Date Added</label>
+                                <div className="managements-between-inputs">
+                                    <input
+                                        className='managements-filter-date'
+                                        type="date"
+                                        value={tempFilterDate.from}
+                                        onChange={(e) =>
+                                            setTempFilterDate({ ...tempFilterDate, from: e.target.value })
+                                        }
+                                        disabled={operationLoading}
+                                    />
+                                    <span>and</span>
+                                    <input
+                                        className='managements-filter-date'
+                                        type="date"
+                                        value={tempFilterDate.to}
+                                        onChange={(e) =>
+                                            setTempFilterDate({ ...tempFilterDate, to: e.target.value })
+                                        }
+                                        disabled={operationLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Quantity Filter */}
+                            <div className="managements-filter-group">
+                                <label>Quantity</label>
+                                <div className="managements-between-inputs">
+                                    {/* Added "All" option here */}
+                                    <CustomRadio
+                                        id="quantity-all"
+                                        name="filter-quantity"
+                                        value="all"
+                                        checked={tempFilterQuantity === 'all'}
+                                        onChange={(e) => setTempFilterQuantity(e.target.value)}
+                                        label="All"
+                                        disabled={operationLoading}
+                                    />
+                                    <CustomRadio
+                                        id="quantity-inStock"
+                                        name="filter-quantity"
+                                        value="inStock"
+                                        checked={tempFilterQuantity === 'inStock'}
+                                        onChange={(e) => setTempFilterQuantity(e.target.value)}
+                                        label="In Stock"
+                                        disabled={operationLoading}
+                                    />
+                                    <CustomRadio
+                                        id="quantity-lowStock"
+                                        name="filter-quantity"
+                                        value="lowStock"
+                                        checked={tempFilterQuantity === 'lowStock'}
+                                        onChange={(e) => setTempFilterQuantity(e.target.value)}
+                                        label="Low Stock"
+                                        disabled={operationLoading}
+                                    />
+                                    <CustomRadio
+                                        id="quantity-outOfStock"
+                                        name="filter-quantity"
+                                        value="outOfStock"
+                                        checked={tempFilterQuantity === 'outOfStock'}
+                                        onChange={(e) => setTempFilterQuantity(e.target.value)}
+                                        label="Out of Stock"
+                                        disabled={operationLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Tag Filter */}
+                            <div className="managements-filter-group">
+                                <label>Tag</label>
+                                <div className="managements-between-inputs">
+                                    { /* Assuming your product.tags is an array of strings */
+                                        [...new Set(products.flatMap(product => product.tags))].map(tag => (
+                                            <CustomCheckbox
+                                                key={tag}
+                                                id={`tag-${tag}`}
+                                                name="filter-tag"
+                                                value={tag}
+                                                checked={tempFilterTags.includes(tag)}
+                                                onChange={handleTagChange}
+                                                label={tag}
+                                                disabled={operationLoading}
+                                            />
+                                        ))
                                     }
-                                    onChange={handleSelectAll}
-                                    disabled={operationLoading}
-                                />
-                            </th>
-                            <th>ID</th>
-                            <th className=''>Product</th>
-                            <th>Price</th>
-                            <th>Sale</th>
-                            <th>Quantity</th>
-                            <th>Date Added</th>
-                            <th>Tag</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {products.length ? (
-                            products.map((product) => (
-                                <tr key={product._id}>
-                                    <td>
-                                        <CustomCheckbox
-                                            id={`select-${product._id}`}
-                                            name={`select-${product._id}`}
-                                            value={product._id}
-                                            checked={selected.includes(product._id)}
-                                            onChange={() => handleSelect(product._id)}
-                                            disabled={operationLoading}
-                                        />
-                                    </td>
-                                    <td>{product._id}</td>
-                                    <td>
-                                        <div className='managements-products-name-container'>
-                                            {product.images?.list && product.images.list.length > 0 && (
-                                                <img src={product.images.list[product.images.mainImage || 0].url} alt={product.name} />
-                                            )}
-                                            <span>{product.name}</span>
-                                        </div>
-                                    </td>
-                                    <td>${product.price.toFixed(2)}</td>
-                                    <td>{product.sale > 0 ? `${product.sale}%` : 'No'}</td>
-                                    <td>{product.properties && product.properties[0]?.sizes.reduce((sum, size) => sum + size.quantity, 0)}</td>
-                                    <td>{new Date(product.createdAt).toLocaleDateString()}</td>
-                                    <td>{product.tags.join(', ')}</td>
-                                    <td>
-                                        <div className='managements-action-btn-container'>
-                                            <button
-                                                className="managements-action-btn managements-edit-btn"
-                                                title="Edit"
-                                                disabled={operationLoading}
-                                                onClick={() => handleEditProduct(product)} // Pass the entire product object
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                className="managements-action-btn managements-delete-btn"
-                                                title="Delete"
-                                                onClick={() => handleDeleteSingleProduct(product._id)}
-                                                disabled={operationLoading}
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="9">No products found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </div>
 
-            {/* Pagination */}
-            {pageCount > 1 && (
+                            {/* Price Filter */}
+                            <div className="managements-filter-group">
+                                <label>Price</label>
+                                <div className="managements-between-inputs">
+                                    <input
+                                        className='management-filter-price-input'
+                                        type="number"
+                                        min="0"
+                                        placeholder="From"
+                                        value={tempFilterPrice.from}
+                                        onChange={(e) =>
+                                            setTempFilterPrice({ ...tempFilterPrice, from: e.target.value })
+                                        }
+                                        disabled={operationLoading}
+                                    />
+                                    <span>and</span>
+                                    <input
+                                        className='management-filter-price-input'
+                                        type="number"
+                                        min="0"
+                                        placeholder="To"
+                                        value={tempFilterPrice.to}
+                                        onChange={(e) =>
+                                            setTempFilterPrice({ ...tempFilterPrice, to: e.target.value })
+                                        }
+                                        disabled={operationLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Filter Actions */}
+                            <div className="managements-filter-actions">
+                                <button type="submit" className="managements-apply-filters-btn" disabled={operationLoading}>
+                                    Apply Filters
+                                </button>
+                                <button
+                                    type="button"
+                                    className="managements-clear-filters-btn"
+                                    onClick={clearFilters}
+                                    disabled={operationLoading}
+                                >
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </form>
+                    </Modal>
+                )}
+
+                {/* View Product Modal */}
+                {isViewProductModalOpen && (
+                    <Modal
+                        onClose={handleCloseViewProductModal}
+                        contentState="view-product-modal"
+                    >
+                        <ViewProduct productId={viewProductId} onClose={handleCloseViewProductModal} />
+                    </Modal>
+                )}
+
+                {/* Product Table */}
+                <div className="managements-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style={{ width: '5%' }}>
+
+                                    <CustomCheckbox
+                                        id="select-all"
+                                        name="select-all"
+                                        value="select-all"
+                                        checked={
+                                            products.length > 0 &&
+                                            selected.length === products.length
+                                        }
+                                        onChange={handleSelectAll}
+                                        disabled={operationLoading}
+                                    />
+                                </th>
+                                <th style={{ width: '25%' }}>Product</th>
+                                <th style={{ width: '5%' }}>SKU</th>
+                                <th style={{ width: '5%' }}>Price</th>
+                                <th style={{ width: '5%' }}>Sale</th>
+                                <th style={{ width: '10%' }}>Final Price</th>
+                                <th style={{ width: '5%' }}>Stock</th>
+                                <th style={{ width: '10%' }}>Date Added</th>
+                                <th style={{ width: '15%' }}>Tag</th>
+                                <th style={{ width: '5%' }}>Active</th>
+                                <th style={{ width: '10%' }}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredProducts.length ? (
+                                filteredProducts.map((product) => (
+                                    <tr key={product._id}>
+                                        <td>
+                                            <CustomCheckbox
+                                                id={`select-${product._id}`}
+                                                name={`select-${product._id}`}
+                                                value={product._id}
+                                                checked={selected.includes(product._id)}
+                                                onChange={() => handleSelect(product._id)}
+                                                disabled={operationLoading}
+                                            />
+                                        </td>
+                                        <td>
+                                            <div className='managements-products-name-container'>
+                                                {product.images.list && product.images.list.length > 0 && (
+                                                    <img src={product.images.list[product.images.mainImage || 0].url} alt={product.name} />
+                                                )}
+                                                <span>{product.name}</span>
+                                            </div>
+                                        </td>
+                                        <td>{product.productId}</td>
+                                        <td>{product.price.toFixed(2)}</td>
+                                        <td>{product.sale > 0 ? `${product.sale}%` : 'No'}</td>
+                                        <td>{product.price - (product.price * product.sale / 100)}</td>
+                                        <td>{calculateTotalStock(product)}</td>
+                                        <td>{new Date(product.createdAt).toLocaleDateString()}</td>
+                                        <td>
+                                            <div className='managements-tags-container'>
+                                                {product.tags.map(tag => (
+                                                    <span key={tag} className='managements-tag'>{tag}</span>
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td>{product.isActive == true ? "T" : "F"}</td>
+                                        <td>
+                                            <div className='managements-action-btn-container'>
+                                                <button
+                                                    className="managements-action-btn managements-edit-btn"
+                                                    title="Edit"
+                                                    disabled={operationLoading}
+                                                    onClick={() => handleEditProduct(product)} // Pass the entire product object
+                                                >
+                                                    <FaEdit />
+                                                </button>
+                                                <button
+                                                    className="managements-action-btn managements-delete-btn"
+                                                    title="Delete"
+                                                    onClick={() => handleDeleteSingleProduct(product._id)}
+                                                    disabled={operationLoading}
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                                <button
+                                                    className="managements-action-btn managements-view-btn"
+                                                    title="view Product"
+                                                    onClick={() => handleViewProduct(product._id)}
+                                                >
+                                                    <FaEye />
+                                                </button>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="9">No products found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination */}
                 <ReactPaginate
                     previousLabel={'<'}
                     nextLabel={'>'}
@@ -684,8 +716,8 @@ function ProductManagements() {
                     forcePage={currentPage}
                     disabled={operationLoading}
                 />
-            )}
-        </div>
+            </div>
+        </>
     );
 }
 

@@ -61,6 +61,7 @@
     box-shadow: var(--box-shadow2);
     overflow-y: auto;
     max-height: 25rem;
+    background-color: white;
 }
 
 .property-list {

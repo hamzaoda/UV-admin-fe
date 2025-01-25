@@ -18,23 +18,16 @@
 .modal-container {
     background-color: white;
     border-radius: 8px;
-    /* Remove width: fit-content */
-    max-width: 600px;
-    /* Default max-width */
-    width: auto;
-    height: auto;
-    /* Allow the width to adjust based on content */
-    padding: 2rem;
+    height: 80vh;
+    width: 50vw;
     position: relative;
     display: flex;
     flex-direction: column;
-    /* Ensure content stacks vertically */
-    justify-content: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation-duration: 0.4s;
     animation-fill-mode: forwards;
     transition: max-width 0.4s ease;
-    /* Animate max-width */
+    padding: 2rem;
 }
 
 .modal-container.state-a {
@@ -45,6 +38,11 @@
 .modal-container.state-b {
     max-width: 800px;
     /* Width for state-b (e.g., success message) */
+}
+
+.modal-content{
+    overflow: auto;
+
 }
 
 /* Close button styling */
@@ -66,4 +64,26 @@
 .modal-close-button:hover {
     color: #ff0000;
     background-color: #55555500;
+}
+
+
+
+/* For WebKit-based browsers (Chrome, Safari, newer Edge) */
+.modal-content::-webkit-scrollbar {
+    width: 0.5rem;
+    /* Width of the scrollbar */
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f2f2f2;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    /* Color of the thumb */
+
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgb(162, 162, 162);
 }

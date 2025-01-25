@@ -1,0 +1,51 @@
+.order-details-x {
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.order-details-h1 {
+    margin: 0;
+}
+
+.order-details-h3{
+    margin-bottom: 1.25rem;
+}
+
+.order-details-id{
+    margin-bottom: 1rem;
+}
+
+.order-details-id-date-container {
+    margin-bottom: 2rem;
+    align-items: start;
+}
+
+.order-details-summary-customer-container {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.order-details-summary-container,
+.order-details-customer-details-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    justify-content: space-between;
+    align-items: start;
+    padding: 2rem 4rem;
+}
+
+.order-details-text {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 2rem;
+}
+
+.order-details-hr {
+    width: 100%;
+    border: none;
+    border-bottom: solid 0.1rem rgba(0, 0, 0, 0.074);
+}

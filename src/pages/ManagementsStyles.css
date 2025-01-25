@@ -13,10 +13,6 @@
     /* Add other variables as needed */
 }
 
-.managements-container {
-    width: 100%;
-}
-
 /* Heading */
 .managements-container h1 {
     margin-bottom: 2rem;
@@ -119,6 +115,7 @@
 
 .managements-items-per-page label,
 .managements-filter-sale label {
+    margin: 0;
     margin-right: 0.5rem;
     font-weight: 500;
     color: var(--secondary-text-color, #555);
@@ -128,7 +125,7 @@
 .managements-filter-sale select {
     width: 100px;
     padding: 0.3rem;
-    border: 1px solid #ccc;
+    border: 1px solid #ccaf99;
     border-radius: 4px;
     font-size: 0.9rem;
 }
@@ -151,7 +148,7 @@
 .managements-search-input {
     width: 100% !important;
     padding: 0.5rem 0.5rem 0.5rem 2.5rem !important;
-    border: 1px solid #ccc;
+    border: 1px solid #ccaf99;
     border-radius: 4px;
     font-size: 1rem;
 }
@@ -288,6 +285,21 @@
 
 .managements-table-container tbody tr:hover {
     background-color: rgba(255, 183, 0, 0.277);
+}
+
+
+.managements-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 0.5rem;
+}
+
+.managements-tag {
+    padding: 0.25rem 0.5rem;
+    background-color: #f26822;
+    color: white;
+    border-radius: 2rem;
+    font-size: 0.75rem;
 }
 
 /* Products Name Container */

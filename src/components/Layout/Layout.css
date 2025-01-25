@@ -1,22 +1,21 @@
 .main-content-1{
-    background-color: var(--sixth-color);
+    background-color: #fae5d4;
     position: relative;
     left: 16.3rem;
     width: calc(100vw - 16.3rem);
-    padding: 1rem 0 0 0;
+    padding: 1rem 2rem;
     box-sizing: border-box;
     min-height: 100vh;
 }
 
-.main-content-2 {
+.section-container {
     position: relative;
-    margin: auto;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: calc(100vw - 20rem);
+    /* width: calc(100vw - 20rem); */
     padding: 2rem;
-    box-sizing: border-box;
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 0 20px color-mix(in srgb, var(--third-color), transparent 75%);

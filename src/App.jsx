@@ -8,11 +8,11 @@ import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import Layout from './components/Layout/Layout';
 import './App.css';
 import ProductManagements from './pages/ProductManagements/ProductManagements';
-import EditProduct from './pages/EditProduct/EditProduct';
-import AddProduct from './pages/AddProduct/AddProduct';
+import ProductForm from './pages/ProductForm/ProductForm';
 import AddProperties from './pages/AddProperties/AddProperties';
 import TransactionManagements from './pages/TransactionManagements/TransactionManagements';
 import OrderManagements from './pages/OrderManagements/OrderManagements';
+import OrderDetails from './pages/OrderDetails/OrderDetails'; // Import OrderDetails
 
 // Lazy-loaded components for better performance
 const Login = lazy(() => import('./pages/Login/Login'));
@@ -48,11 +48,15 @@ const App = () => {
             <Route path="/user-managements" element={<UserManagements />} />
             <Route path="/email-managements" element={<EmailManagements />} />
             <Route path="/product-managements" element={<ProductManagements />} />
-            <Route path="/edit-product/:productId" element={<EditProduct />} /> {/* Add the route for editing */}
-            <Route path="/add-product" element={<AddProduct />} />
+            <Route
+              path="/edit-product/:productId"
+              element={<ProductForm isEditMode={true} />}
+            />
+            <Route path="/add-product" element={<ProductForm />} />
             <Route path="/add-properties" element={<AddProperties />} />
             <Route path="/transaction-managements" element={<TransactionManagements />} />
             <Route path="/order-managements" element={<OrderManagements />} />
+            <Route path="/order/:orderId" element={<OrderDetails />} /> {/* Add the route for OrderDetails */}
 
             {/* Add more protected routes here */}
           </Route>

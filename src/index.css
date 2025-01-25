@@ -53,6 +53,11 @@ body {
 /* -------------------------------------------------- */
 /* Typography */
 /* -------------------------------------------------- */
+
+h1, h2, h3{
+    margin: 0;
+}
+
 h1 {
     color: var(--primary-color);
     font-weight: bold;
@@ -80,10 +85,14 @@ table {
 table th,
 table td {
     padding: 12px;
-    border-bottom: 1px solid var(--sixth-color);
     color: var(--primary-color);
     text-align: left;
 }
+
+table tr{
+    border-bottom: 1px solid var(--sixth-color);
+}
+
 
 table th {
     background-color: var(--secondary-color);
@@ -111,7 +120,7 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
-textarea {
+textarea, .view-product-textarea {
     box-sizing: border-box;
     width: 16rem;
     height: 2.5rem;
@@ -170,7 +179,7 @@ option:hover {
 /* Form element hover and focus states */
 input:hover,
 select:hover,
-textarea:hover {
+textarea:hover, .view-product-textarea:hover {
     border-color: var(--fourth-color);
 }
 

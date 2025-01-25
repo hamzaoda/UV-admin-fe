@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 import useApi from '../../hooks/useApi'; // Import the useApi hook
 
 function AddProperties() {
-    const propertyCategories = ['sizes', 'tags', 'colors']; // Lowercase keys
+    // const propertyCategories = ['sizes', 'tags', 'colors']; // Lowercase keys
+    const propertyCategories = ['sizes', 'tags']; // Lowercase keys
     const [activeTab, setActiveTab] = useState('sizes');
     const [newProperty, setNewProperty] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -250,11 +251,13 @@ function AddProperties() {
     return (
         <div className="add-properties-container slide-in">
             <div className='add-product-h1-container'>
-                <div></div>
-                <h1 className="fade-in">Manage Product Properties</h1>
                 <Link to="/add-product" className="return-link">
                     Back to Add Product
                 </Link>
+                <h1 className="fade-in">Manage Product Properties</h1>
+
+                <div></div>
+
             </div>
 
             {/* Tab Navigation */}

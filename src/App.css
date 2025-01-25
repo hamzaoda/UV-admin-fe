@@ -1,2 +1,33 @@
-#root {}
+/* For WebKit-based browsers (Chrome, Safari, newer Edge) */
+::-webkit-scrollbar {
+    width: 0.5rem;
+    /* Width of the scrollbar */
+}
 
+::-webkit-scrollbar-track {
+    background: #20180f;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #f26822;
+    /* Color of the thumb */
+
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #c82025;
+}
+
+/* ------------------------------------------------------------------- 
+ * ## change autocomplete styles in chrome
+ * ------------------------------------------------------------------- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus input:-webkit-autofill,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--primary-color);
+}

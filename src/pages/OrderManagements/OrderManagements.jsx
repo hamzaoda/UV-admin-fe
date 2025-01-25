@@ -1,61 +1,30 @@
 // OrderManagement.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
-import { FaSearch, FaFilter, FaEye } from 'react-icons/fa';
+import { FaFilter, FaSearch, FaEye } from 'react-icons/fa'; // Removed FaEdit, FaPlus
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Modal from '../../components/Modal/Modal'; // Ensure you have a Modal component
-import OrderDetailsModal from '../OrderDetails/OrderDetailsModal'; // New component to display order details
 import CustomRadio from '../../components/CustomComponents/CustomRadio/CustomRadio'; // Import CustomRadio
 import '../ManagementsStyles.css'; // Import the consolidated CSS
-
-// Function to generate dummy orders with order items
-const generateDummyOrders = (count) =>
-    Array.from({ length: count }, (_, i) => {
-        const randomDate = new Date(
-            Date.now() - Math.floor(Math.random() * 10000000000)
-        );
-        const price = parseFloat((Math.random() * 1000).toFixed(2));
-        const numberOfProducts = Math.floor(Math.random() * 5) + 1; // 1 to 5 products per order
-        const products = Array.from({ length: numberOfProducts }, (_, j) => ({
-            productId: 3000 + j + 1,
-            productName: `Product ${j + 1}`,
-            productImage: `https://via.placeholder.com/100?text=Product+${j + 1}`,
-            quantity: Math.floor(Math.random() * 10) + 1, // 1 to 10
-            priceUnit: parseFloat((Math.random() * 100).toFixed(2)),
-            fullPrice: parseFloat(
-                (Math.floor(Math.random() * 10 + 1) * (Math.random() * 100)).toFixed(2)
-            ),
-            colour: ['Red', 'Blue', 'Green', 'Black', 'White'][j % 5],
-            size: ['S', 'M', 'L', 'XL'][j % 4],
-        }));
-
-        return {
-            id: i + 1,
-            orderId: 2000 + i,
-            orderDate: randomDate.toISOString().slice(0, 10),
-            transactionNumber: 1000 + i,
-            orderStatus: ['Pending', 'Completed', 'Cancelled'][i % 3],
-            userEmail: `user${i + 1}@example.com`,
-            orderPrice: price,
-            products,
-        };
-    });
+import useApi from '../../hooks/useApi'; // Assuming you have a useApi hook
 
 function OrderManagement() {
     // State variables
-    const [orders, setOrders] = useState(generateDummyOrders(100));
+    const [orders, setOrders] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [totalOrders, setTotalOrders] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     // Pagination
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(0);
 
-    // Modal state
+    // Modal state (only for filter now)
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-    const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState(null);
 
     // Filter states
-    const [filterStatus, setFilterStatus] = useState('all');
+    const [filterStatus, setFilterStatus] = useState(''); // Changed default to ''
     const [filterDateFrom, setFilterDateFrom] = useState('');
     const [filterDateTo, setFilterDateTo] = useState('');
     const [filterAmountMin, setFilterAmountMin] = useState('');
@@ -68,78 +37,73 @@ function OrderManagement() {
     const [tempFilterAmountMin, setTempFilterAmountMin] = useState(filterAmountMin);
     const [tempFilterAmountMax, setTempFilterAmountMax] = useState(filterAmountMax);
 
-    // Filtering and searching
-    const filteredOrders = useMemo(() => {
-        let filtered = orders;
+    // Navigation hook
+    const navigate = useNavigate();
+    const { callApi } = useApi(); // Use the useApi hook
 
-        // Search by Order ID
-        if (searchTerm.trim() !== '') {
-            filtered = filtered.filter((order) =>
-                order.orderId.toString().includes(searchTerm.trim())
-            );
-        }
+    // Function to fetch orders from the backend
+    const fetchOrders = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            params.append('skip', currentPage * itemsPerPage);
+            params.append('limit', itemsPerPage);
+            if (searchTerm) params.append('search', searchTerm);
+            if (filterStatus) params.append('status', filterStatus);
+            if (filterDateFrom) params.append('dateFrom', filterDateFrom);
+            if (filterDateTo) params.append('dateTo', filterDateTo);
+            if (filterAmountMin) params.append('amountMin', filterAmountMin);
+            if (filterAmountMax) params.append('amountMax', filterAmountMax);
 
-        // Filter by Order Status
-        if (filterStatus !== 'all') {
-            filtered = filtered.filter((order) => order.orderStatus === filterStatus);
-        }
+            const response = await callApi({
+                url: `orders/list/?${params.toString()}`, // Construct URL with params
+                method: 'GET',
+                successMessage: 'Orders fetched successfully!',
+                errorMessage: 'Failed to fetch orders.',
+            });
 
-        // Filter by Order Date
-        if (filterDateFrom && filterDateTo) {
-            filtered = filtered.filter(
-                (order) =>
-                    new Date(order.orderDate) >= new Date(filterDateFrom) &&
-                    new Date(order.orderDate) <= new Date(filterDateTo)
-            );
+            if (response.isSuccess && response.data) {
+                setOrders(response.data.orders);
+                setTotalOrders(response.data.pagination?.total || 0); // Access total from pagination
+            } else {
+                setError(response.message || 'Failed to fetch orders');
+            }
+        } catch (err) {
+            setError('Error fetching orders.');
+            console.error("Error fetching orders:", err);
+        } finally {
+            setLoading(false);
         }
+    };
 
-        // Filter by Order Amount
-        if (filterAmountMin !== '') {
-            filtered = filtered.filter(
-                (order) => order.orderPrice >= parseFloat(filterAmountMin)
-            );
-        }
-        if (filterAmountMax !== '') {
-            filtered = filtered.filter(
-                (order) => order.orderPrice <= parseFloat(filterAmountMax)
-            );
-        }
-
-        return filtered;
-    }, [
-        orders,
-        searchTerm,
-        filterStatus,
-        filterDateFrom,
-        filterDateTo,
-        filterAmountMin,
-        filterAmountMax,
-    ]);
+    // Fetch orders on component mount and when dependencies change
+    useEffect(() => {
+        fetchOrders();
+    }, [currentPage, itemsPerPage, searchTerm, filterStatus, filterDateFrom, filterDateTo, filterAmountMin, filterAmountMax]);
 
     // Pagination calculations
-    const pageCount = Math.ceil(filteredOrders.length / itemsPerPage);
-    const currentItems = filteredOrders.slice(
-        currentPage * itemsPerPage,
-        currentPage * itemsPerPage + itemsPerPage
-    );
+    const pageCount = Math.ceil(totalOrders / itemsPerPage);
+    const currentItems = orders; // Data is already filtered on the backend
 
     // Handle page change
     const handlePageChange = ({ selected }) => setCurrentPage(selected);
 
     // Clear all filters
     const clearFilters = () => {
-        setFilterStatus('all');
+        setFilterStatus('');
         setFilterDateFrom('');
         setFilterDateTo('');
         setFilterAmountMin('');
         setFilterAmountMax('');
 
         // Reset temporary filters
-        setTempFilterStatus('all');
+        setTempFilterStatus('');
         setTempFilterDateFrom('');
         setTempFilterDateTo('');
         setTempFilterAmountMin('');
         setTempFilterAmountMax('');
+        setCurrentPage(0); // Reset page after clearing filters
     };
 
     // Apply filters
@@ -154,17 +118,18 @@ function OrderManagement() {
         setCurrentPage(0); // Reset to first page on filter
     };
 
-    // Handle opening order details modal
+    // Handle navigating to order details page
     const handleViewOrder = (order) => {
-        setSelectedOrder(order);
-        setIsOrderDetailsModalOpen(true);
+        navigate(`/order/${order._id}`, { state: { order } }); // Pass the order object in state, use _id
     };
 
-    // Handle closing order details modal
-    const handleCloseOrderDetailsModal = () => {
-        setIsOrderDetailsModalOpen(false);
-        setSelectedOrder(null); // Optional: Clear the selected order
-    };
+    if (loading) {
+        return <div>Loading orders...</div>;
+    }
+
+    if (error) {
+        return <div>Error fetching orders: {error}</div>;
+    }
 
     return (
         <div className="managements-container slide-in">
@@ -197,9 +162,12 @@ function OrderManagement() {
                         <input
                             type="text"
                             className="managements-search-input"
-                            placeholder="Search by Order ID..."
+                            placeholder="Search by anything..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(0); // Reset page on search
+                            }}
                         />
                     </div>
                 </div>
@@ -230,8 +198,8 @@ function OrderManagement() {
                                     <CustomRadio
                                         id="status-all"
                                         name="filter-status"
-                                        value="all"
-                                        checked={tempFilterStatus === 'all'}
+                                        value=""
+                                        checked={tempFilterStatus === ''}
                                         onChange={(e) => setTempFilterStatus(e.target.value)}
                                         label="All"
                                     />
@@ -259,6 +227,14 @@ function OrderManagement() {
                                         onChange={(e) => setTempFilterStatus(e.target.value)}
                                         label="Cancelled"
                                     />
+                                    <CustomRadio
+                                        id="status-shipped"
+                                        name="filter-status"
+                                        value="Shipped"
+                                        checked={tempFilterStatus === 'Shipped'}
+                                        onChange={(e) => setTempFilterStatus(e.target.value)}
+                                        label="Shipped"
+                                    />
                                 </div>
                             </div>
 
@@ -271,7 +247,6 @@ function OrderManagement() {
                                         value={tempFilterDateFrom}
                                         onChange={(e) => setTempFilterDateFrom(e.target.value)}
                                         placeholder="From"
-                                        required
                                     />
                                     <span>to</span>
                                     <input
@@ -279,7 +254,6 @@ function OrderManagement() {
                                         value={tempFilterDateTo}
                                         onChange={(e) => setTempFilterDateTo(e.target.value)}
                                         placeholder="To"
-                                        required
                                     />
                                 </div>
                             </div>
@@ -326,14 +300,6 @@ function OrderManagement() {
                 </Modal>
             )}
 
-            {/* Order Details Modal */}
-            {isOrderDetailsModalOpen && selectedOrder && (
-                <OrderDetailsModal
-                    order={selectedOrder}
-                    onClose={handleCloseOrderDetailsModal} // Pass onClose handler
-                />
-            )}
-
             {/* Orders Table */}
             <div className="managements-table-container fade-in">
                 <table>
@@ -341,9 +307,9 @@ function OrderManagement() {
                         <tr>
                             <th>Order ID</th>
                             <th>Order Date</th>
-                            <th>Transaction Number</th>
-                            <th>User Email</th>
-                            <th>Order Price</th>
+                            <th>Customer Name</th>
+                            <th>Customer Email</th>
+                            <th>Total Items</th>
                             <th>Order Status</th>
                             <th>Action</th>
                         </tr>
@@ -351,18 +317,19 @@ function OrderManagement() {
                     <tbody>
                         {currentItems.length ? (
                             currentItems.map((order) => (
-                                <tr key={order.id}>
-                                    <td>{order.orderId}</td>
-                                    <td>{order.orderDate}</td>
-                                    <td>{order.transactionNumber}</td>
-                                    <td>{order.userEmail}</td>
-                                    <td>${order.orderPrice.toFixed(2)}</td>
-                                    <td>{order.orderStatus}</td>
+                                <tr key={order._id}>
+                                    <td>{order.trackingId}</td>
+                                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td>{`${order.contactInformation?.firstName} ${order.contactInformation?.lastName}`}</td>
+                                    <td>{order.contactInformation?.email}</td>
+                                    <td>{order.cart?.reduce((sum, item) => sum + item.sizes.reduce((sizeSum, size) => sizeSum + size.quantity, 0), 0)}</td>
+                                    {/* Assuming you might add a status field to your order model */}
+                                    <td>{order.orderStatus || 'Processing'}</td>
                                     <td>
                                         <div className="managements-action-btn-container">
                                             <button
                                                 className="managements-action-btn managements-view-btn"
-                                                title="Show Order"
+                                                title="view Order"
                                                 onClick={() => handleViewOrder(order)}
                                             >
                                                 <FaEye />

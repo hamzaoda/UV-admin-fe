@@ -112,7 +112,7 @@ function EmailManagements() {
   };
 
   return (
-    <div className="email-managements-container">
+    <div className="email-managements-container section-container">
       <h1>Email Management</h1>
 
       {isLoading ? (
