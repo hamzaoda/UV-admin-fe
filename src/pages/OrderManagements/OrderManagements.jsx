@@ -1,47 +1,48 @@
 // OrderManagement.jsx
 import React, { useState, useMemo, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
-import { FaFilter, FaSearch, FaEye } from 'react-icons/fa'; // Removed FaEdit, FaPlus
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import Modal from '../../components/Modal/Modal'; // Ensure you have a Modal component
-import CustomRadio from '../../components/CustomComponents/CustomRadio/CustomRadio'; // Import CustomRadio
-import '../ManagementsStyles.css'; // Import the consolidated CSS
-import useApi from '../../hooks/useApi'; // Assuming you have a useApi hook
+import { FaFilter, FaSearch, FaEye } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import Modal from '../../components/Modal/Modal';
+import CustomRadio from '../../components/CustomComponents/CustomRadio/CustomRadio';
+import '../ManagementsStyles.css';
+import useApi from '../../hooks/useApi';
 
 function OrderManagement() {
-    // State variables
+    const statusOptions = [
+        { value: 'processing', label: 'Processing' },
+        { value: 'on delivery', label: 'On Delivery' },
+        { value: 'Completed', label: 'Completed' },
+        { value: 'Canceled', label: 'Canceled' },
+    ];
+
     const [orders, setOrders] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [totalOrders, setTotalOrders] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
 
-    // Pagination
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(0);
 
-    // Modal state (only for filter now)
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-    // Filter states
-    const [filterStatus, setFilterStatus] = useState(''); // Changed default to ''
+    const [filterStatus, setFilterStatus] = useState('');
     const [filterDateFrom, setFilterDateFrom] = useState('');
     const [filterDateTo, setFilterDateTo] = useState('');
     const [filterAmountMin, setFilterAmountMin] = useState('');
     const [filterAmountMax, setFilterAmountMax] = useState('');
 
-    // Temporary filter states for modal
     const [tempFilterStatus, setTempFilterStatus] = useState(filterStatus);
     const [tempFilterDateFrom, setTempFilterDateFrom] = useState(filterDateFrom);
     const [tempFilterDateTo, setTempFilterDateTo] = useState(filterDateTo);
     const [tempFilterAmountMin, setTempFilterAmountMin] = useState(filterAmountMin);
     const [tempFilterAmountMax, setTempFilterAmountMax] = useState(filterAmountMax);
 
-    // Navigation hook
     const navigate = useNavigate();
-    const { callApi } = useApi(); // Use the useApi hook
+    const { callApi } = useApi();
 
-    // Function to fetch orders from the backend
     const fetchOrders = async () => {
         setLoading(true);
         setError(null);
@@ -57,7 +58,7 @@ function OrderManagement() {
             if (filterAmountMax) params.append('amountMax', filterAmountMax);
 
             const response = await callApi({
-                url: `orders/list/?${params.toString()}`, // Construct URL with params
+                url: `orders/list/?${params.toString()}`,
                 method: 'GET',
                 successMessage: 'Orders fetched successfully!',
                 errorMessage: 'Failed to fetch orders.',
@@ -65,7 +66,7 @@ function OrderManagement() {
 
             if (response.isSuccess && response.data) {
                 setOrders(response.data.orders);
-                setTotalOrders(response.data.pagination?.total || 0); // Access total from pagination
+                setTotalOrders(response.data.pagination?.total || 0);
             } else {
                 setError(response.message || 'Failed to fetch orders');
             }
@@ -77,19 +78,47 @@ function OrderManagement() {
         }
     };
 
-    // Fetch orders on component mount and when dependencies change
+    const updateOrderStatus = async (orderId, newStatus) => {
+        setStatusUpdateLoading(true);
+        try {
+            const response = await callApi({
+                url: `orders/${orderId}/status`,
+                method: 'PUT',
+                dataReq: { status: newStatus },
+                successMessage: 'Order status updated successfully!',
+                errorMessage: 'Failed to update order status.',
+            });
+
+            if (response.isSuccess) {
+                setOrders(prevOrders => {
+                    return prevOrders.map(order => {
+                        if (order._id === orderId) {
+                            return { ...order, status: newStatus };
+                        }
+                        return order;
+                    });
+                });
+            } else {
+                setError(response.message || 'Failed to update order status');
+                console.error(`API Error for orderId: ${orderId}:`, response.message);
+            }
+        } catch (err) {
+            setError('Error updating order status.');
+            console.error("Error updating order status:", err);
+        } finally {
+            setStatusUpdateLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchOrders();
     }, [currentPage, itemsPerPage, searchTerm, filterStatus, filterDateFrom, filterDateTo, filterAmountMin, filterAmountMax]);
 
-    // Pagination calculations
     const pageCount = Math.ceil(totalOrders / itemsPerPage);
-    const currentItems = orders; // Data is already filtered on the backend
+    const currentItems = orders;
 
-    // Handle page change
     const handlePageChange = ({ selected }) => setCurrentPage(selected);
 
-    // Clear all filters
     const clearFilters = () => {
         setFilterStatus('');
         setFilterDateFrom('');
@@ -97,16 +126,14 @@ function OrderManagement() {
         setFilterAmountMin('');
         setFilterAmountMax('');
 
-        // Reset temporary filters
         setTempFilterStatus('');
         setTempFilterDateFrom('');
         setTempFilterDateTo('');
         setTempFilterAmountMin('');
         setTempFilterAmountMax('');
-        setCurrentPage(0); // Reset page after clearing filters
+        setCurrentPage(0);
     };
 
-    // Apply filters
     const applyFilters = (e) => {
         e.preventDefault();
         setFilterStatus(tempFilterStatus);
@@ -115,13 +142,13 @@ function OrderManagement() {
         setFilterAmountMin(tempFilterAmountMin);
         setFilterAmountMax(tempFilterAmountMax);
         setIsFilterModalOpen(false);
-        setCurrentPage(0); // Reset to first page on filter
+        setCurrentPage(0);
     };
 
-    // Handle navigating to order details page
     const handleViewOrder = (order) => {
-        navigate(`/order/${order._id}`, { state: { order } }); // Pass the order object in state, use _id
+        navigate(`/order/${order._id}`, { state: { order } });
     };
+
 
     if (loading) {
         return <div>Loading orders...</div>;
@@ -135,11 +162,8 @@ function OrderManagement() {
         <div className="managements-container slide-in">
             <h1>Order Management</h1>
 
-            {/* Controls */}
             <div className="managements-controls">
-                {/* Left Controls: Items Per Page and Search */}
                 <div className="managements-left-controls">
-                    {/* Items Per Page */}
                     <div className="managements-items-per-page">
                         <label htmlFor="items-per-page">Show</label>
                         <select
@@ -147,7 +171,7 @@ function OrderManagement() {
                             value={itemsPerPage}
                             onChange={(e) => {
                                 setItemsPerPage(Number(e.target.value));
-                                setCurrentPage(0); // Reset to first page
+                                setCurrentPage(0);
                             }}
                         >
                             <option value={10}>10</option>
@@ -156,7 +180,6 @@ function OrderManagement() {
                         </select>
                     </div>
 
-                    {/* Search Input */}
                     <div className="managements-search-input-container">
                         <FaSearch className="managements-search-icon" />
                         <input
@@ -166,13 +189,12 @@ function OrderManagement() {
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
-                                setCurrentPage(0); // Reset page on search
+                                setCurrentPage(0);
                             }}
                         />
                     </div>
                 </div>
 
-                {/* Right Controls: Only Filter Button */}
                 <div className="managements-right-controls">
                     <button
                         className="managements-filter-btn"
@@ -185,13 +207,11 @@ function OrderManagement() {
                 </div>
             </div>
 
-            {/* Filter Modal */}
             {isFilterModalOpen && (
                 <Modal onClose={() => setIsFilterModalOpen(false)} contentState="filter-modal">
                     <div className="">
                         <h2>Advanced Filters</h2>
                         <form onSubmit={applyFilters} className="managements-filter-form">
-                            {/* Order Status Filter */}
                             <div className="managements-filter-group">
                                 <label>Order Status</label>
                                 <div className="managements-between-inputs">
@@ -222,23 +242,22 @@ function OrderManagement() {
                                     <CustomRadio
                                         id="status-cancelled"
                                         name="filter-status"
-                                        value="Cancelled"
-                                        checked={tempFilterStatus === 'Cancelled'}
+                                        value="Canceled"
+                                        checked={tempFilterStatus === 'Canceled'}
                                         onChange={(e) => setTempFilterStatus(e.target.value)}
-                                        label="Cancelled"
+                                        label="Canceled"
                                     />
                                     <CustomRadio
                                         id="status-shipped"
                                         name="filter-status"
-                                        value="Shipped"
-                                        checked={tempFilterStatus === 'Shipped'}
+                                        value="on delivery"
+                                        checked={tempFilterStatus === 'on delivery'}
                                         onChange={(e) => setTempFilterStatus(e.target.value)}
                                         label="Shipped"
                                     />
                                 </div>
                             </div>
 
-                            {/* Order Date Filter */}
                             <div className="managements-filter-group">
                                 <label>Order Date</label>
                                 <div className="managements-date-range">
@@ -258,7 +277,6 @@ function OrderManagement() {
                                 </div>
                             </div>
 
-                            {/* Order Amount Filter */}
                             <div className="managements-filter-group">
                                 <label>Order Amount ($)</label>
                                 <div className="managements-amount-range">
@@ -282,7 +300,6 @@ function OrderManagement() {
                                 </div>
                             </div>
 
-                            {/* Filter Actions */}
                             <div className="managements-filter-actions">
                                 <button type="submit" className="managements-apply-filters-btn">
                                     Apply Filters
@@ -300,7 +317,6 @@ function OrderManagement() {
                 </Modal>
             )}
 
-            {/* Orders Table */}
             <div className="managements-table-container fade-in">
                 <table>
                     <thead>
@@ -323,8 +339,20 @@ function OrderManagement() {
                                     <td>{`${order.contactInformation?.firstName} ${order.contactInformation?.lastName}`}</td>
                                     <td>{order.contactInformation?.email}</td>
                                     <td>{order.cart?.reduce((sum, item) => sum + item.sizes.reduce((sizeSum, size) => sizeSum + size.quantity, 0), 0)}</td>
-                                    {/* Assuming you might add a status field to your order model */}
-                                    <td>{order.orderStatus || 'Processing'}</td>
+                                    <td>
+                                        <select
+                                            value={order.status || ''}
+                                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                                            className="managements-status-select"
+                                            disabled={statusUpdateLoading}
+                                        >
+                                            {statusOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </td>
                                     <td>
                                         <div className="managements-action-btn-container">
                                             <button
@@ -347,7 +375,6 @@ function OrderManagement() {
                 </table>
             </div>
 
-            {/* Pagination */}
             {pageCount > 1 && (
                 <ReactPaginate
                     previousLabel={'<'}
