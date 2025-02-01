@@ -1,7 +1,10 @@
 // OrderManagement.jsx
 import React, { useState, useMemo, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
-import { FaFilter, FaSearch, FaEye } from 'react-icons/fa';
+import { FaFilter, FaSearch, FaEye, FaCheck } from 'react-icons/fa';
+import { FaClock } from "react-icons/fa6";
+import { TbTruckDelivery } from "react-icons/tb";
+import { MdCancel } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/Modal/Modal';
 import CustomRadio from '../../components/CustomComponents/CustomRadio/CustomRadio';
@@ -9,11 +12,12 @@ import '../ManagementsStyles.css';
 import useApi from '../../hooks/useApi';
 
 function OrderManagement() {
+    // Assuming statusOptions are predefined as per your requirement and backend allows these statuses
     const statusOptions = [
-        { value: 'processing', label: 'Processing' },
-        { value: 'on delivery', label: 'On Delivery' },
-        { value: 'Completed', label: 'Completed' },
-        { value: 'Canceled', label: 'Canceled' },
+        { value: 'processing', label: 'Processing', icon: <FaClock /> },
+        { value: 'on delivery', label: 'On Delivery', icon: <TbTruckDelivery /> },
+        { value: 'completed', label: 'Completed', icon: <FaCheck /> },
+        { value: 'canceled', label: 'Canceled', icon: <MdCancel /> },
     ];
 
     const [orders, setOrders] = useState([]);
@@ -57,22 +61,30 @@ function OrderManagement() {
             if (filterAmountMin) params.append('amountMin', filterAmountMin);
             if (filterAmountMax) params.append('amountMax', filterAmountMax);
 
+            const apiUrl = `orders/list/?${params.toString()}`;
+            console.log("API Request URL:", apiUrl); // DEBUG: Log the API request URL
+
             const response = await callApi({
-                url: `orders/list/?${params.toString()}`,
+                url: apiUrl,
                 method: 'GET',
                 successMessage: 'Orders fetched successfully!',
                 errorMessage: 'Failed to fetch orders.',
             });
 
+            console.log("API Response:", response); // DEBUG: Log the entire API response
+
             if (response.isSuccess && response.data) {
                 setOrders(response.data.orders);
                 setTotalOrders(response.data.pagination?.total || 0);
+                console.log("Fetched Orders:", response.data.orders); // DEBUG: Log fetched orders
+                console.log("Total Orders from API:", response.data.pagination?.total); // DEBUG: Log total orders from API
             } else {
                 setError(response.message || 'Failed to fetch orders');
+                console.error("API Error:", response.message); // DEBUG: Log API error message
             }
         } catch (err) {
             setError('Error fetching orders.');
-            console.error("Error fetching orders:", err);
+            console.error("Error fetching orders:", err); // DEBUG: Log fetch orders error
         } finally {
             setLoading(false);
         }
@@ -149,6 +161,12 @@ function OrderManagement() {
         navigate(`/order/${order._id}`, { state: { order } });
     };
 
+    const getStatusLabel = (statusValue) => {
+        const statusToUse = statusValue === null ? 'processing' : statusValue;
+        const statusOption = statusOptions.find(option => option.value === statusToUse);
+        return statusOption ? option.label : 'Unknown Status';
+    };
+
 
     if (loading) {
         return <div>Loading orders...</div>;
@@ -223,38 +241,18 @@ function OrderManagement() {
                                         onChange={(e) => setTempFilterStatus(e.target.value)}
                                         label="All"
                                     />
-                                    <CustomRadio
-                                        id="status-pending"
-                                        name="filter-status"
-                                        value="Pending"
-                                        checked={tempFilterStatus === 'Pending'}
-                                        onChange={(e) => setTempFilterStatus(e.target.value)}
-                                        label="Pending"
-                                    />
-                                    <CustomRadio
-                                        id="status-completed"
-                                        name="filter-status"
-                                        value="Completed"
-                                        checked={tempFilterStatus === 'Completed'}
-                                        onChange={(e) => setTempFilterStatus(e.target.value)}
-                                        label="Completed"
-                                    />
-                                    <CustomRadio
-                                        id="status-cancelled"
-                                        name="filter-status"
-                                        value="Canceled"
-                                        checked={tempFilterStatus === 'Canceled'}
-                                        onChange={(e) => setTempFilterStatus(e.target.value)}
-                                        label="Canceled"
-                                    />
-                                    <CustomRadio
-                                        id="status-shipped"
-                                        name="filter-status"
-                                        value="on delivery"
-                                        checked={tempFilterStatus === 'on delivery'}
-                                        onChange={(e) => setTempFilterStatus(e.target.value)}
-                                        label="Shipped"
-                                    />
+                                    {/* Use statusOptions to dynamically generate filter radios */}
+                                    {statusOptions.map(option => (
+                                        <CustomRadio
+                                            key={option.value}
+                                            id={`status-${option.value.replace(' ', '-')}`} // create valid id
+                                            name="filter-status"
+                                            value={option.value}
+                                            checked={tempFilterStatus === option.value}
+                                            onChange={(e) => setTempFilterStatus(e.target.value)}
+                                            label={option.label}
+                                        />
+                                    ))}
                                 </div>
                             </div>
 
@@ -340,18 +338,42 @@ function OrderManagement() {
                                     <td>{order.contactInformation?.email}</td>
                                     <td>{order.cart?.reduce((sum, item) => sum + item.sizes.reduce((sizeSum, size) => sizeSum + size.quantity, 0), 0)}</td>
                                     <td>
-                                        <select
-                                            value={order.status || ''}
-                                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                                            className="managements-status-select"
-                                            disabled={statusUpdateLoading}
-                                        >
-                                            {statusOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="managements-status-buttons">
+                                            {statusOptions.map((option, index) => {
+                                                const isCurrentStatus = order.status === option.value;
+                                                const isPreviousStatus = statusOptions.findIndex(s => s.value === order.status) > index;
+                                                const isNextStatus = statusOptions.findIndex(s => s.value === order.status) < index;
+
+                                                if (isCurrentStatus) {
+                                                    return (
+                                                        <span key={option.value} className={`status-label status-label-${option.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                                                            {option.icon} {/* Display Icon */}
+                                                        </span>
+                                                    );
+                                                } else if (isNextStatus && !['completed', 'canceled'].includes(order.status)) { // Only show next status buttons if not completed or canceled
+                                                    return (
+                                                        <button
+                                                            key={option.value}
+                                                            className="status-button status-button-next"
+                                                            onClick={() => updateOrderStatus(order._id, option.value)}
+                                                            disabled={statusUpdateLoading || ['completed', 'canceled'].includes(order.status)}
+                                                        >
+                                                            {option.icon} {/* Display Icon in Button */}
+                                                        </button>
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <button
+                                                            key={option.value}
+                                                            className="status-button status-button-disabled" // Add a class for disabled button styling if needed
+                                                            disabled
+                                                        >
+                                                            {option.icon} {/* Display Icon in Disabled Button */}
+                                                        </button>
+                                                    );
+                                                }
+                                            })}
+                                        </div>
                                     </td>
                                     <td>
                                         <div className="managements-action-btn-container">
@@ -376,27 +398,30 @@ function OrderManagement() {
             </div>
 
             {pageCount > 1 && (
-                <ReactPaginate
-                    previousLabel={'<'}
-                    nextLabel={'>'}
-                    breakLabel={'...'}
-                    pageCount={pageCount}
-                    marginPagesDisplayed={2}
-                    pageRangeDisplayed={3}
-                    onPageChange={handlePageChange}
-                    containerClassName={'managements-pagination fade-in'}
-                    activeClassName={'active'}
-                    disabledClassName={'disabled'}
-                    previousClassName={'managements-pagination-btn'}
-                    nextClassName={'managements-pagination-btn'}
-                    pageClassName={'managements-pagination-btn'}
-                    breakClassName={'managements-pagination-btn'}
-                    previousLinkClassName={'managements-pagination-btn'}
-                    nextLinkClassName={'managements-pagination-btn'}
-                    pageLinkClassName={'managements-pagination-btn'}
-                    breakLinkClassName={'managements-pagination-btn'}
-                    forcePage={currentPage}
-                />
+                <>
+                    {console.log({ pageCount, totalOrders, itemsPerPage })} {/* DEBUG: Log pageCount, totalOrders, itemsPerPage */}
+                    <ReactPaginate
+                        previousLabel={'<'}
+                        nextLabel={'>'}
+                        breakLabel={'...'}
+                        pageCount={pageCount}
+                        marginPagesDisplayed={2}
+                        pageRangeDisplayed={3}
+                        onPageChange={handlePageChange}
+                        containerClassName={'managements-pagination fade-in'}
+                        activeClassName={'active'}
+                        disabledClassName={'disabled'}
+                        previousClassName={'managements-pagination-btn'}
+                        nextClassName={'managements-pagination-btn'}
+                        pageClassName={'managements-pagination-btn'}
+                        breakClassName={'managements-pagination-btn'}
+                        previousLinkClassName={'managements-pagination-btn'}
+                        nextLinkClassName={'managements-pagination-btn'}
+                        pageLinkClassName={'managements-pagination-btn'}
+                        breakLinkClassName={'managements-pagination-btn'}
+                        forcePage={currentPage}
+                    />
+                </>
             )}
         </div>
     );

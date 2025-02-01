@@ -214,11 +214,6 @@ button:hover {
     background-color: var(--third-color);
 }
 
-button:disabled {
-    background-color: grey;
-    cursor: not-allowed;
-}
-
 /* Specific button variations */
 .button-important {
     background-color: var(--secondary-color);

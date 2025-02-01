@@ -470,3 +470,60 @@
         display: none;
     }
 }
+
+/* ManagementsStyles.css or your relevant CSS file */
+.managements-status-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.status-label {
+    border-radius: 0.5rem;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    aspect-ratio: 1/1;
+}
+
+.status-label-processing {
+    background-color: #007bff;
+}
+
+.status-label-on-delivery {
+    background-color: #ffc107;
+    color: black;
+}
+
+.status-label-completed {
+    background-color: #28a745;
+}
+
+.status-label-canceled {
+    background-color: #dc3545;
+}
+
+.status-button {
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    background-color: #e5e5e5;
+    color: #495057;
+}
+
+.status-button:hover {
+    background-color: #495057;
+    color: white;
+}
+
+.status-button:disabled, .status-button:disabled:hover {
+    opacity: 0.75;
+    cursor: not-allowed;
+    background-color: #e5e5e5;
+    color: #495057;
+}

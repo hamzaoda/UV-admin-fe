@@ -7,11 +7,11 @@
     margin: 0;
 }
 
-.order-details-h3{
+.order-details-h3 {
     margin-bottom: 1.25rem;
 }
 
-.order-details-id{
+.order-details-id {
     margin-bottom: 1rem;
 }
 
@@ -48,4 +48,21 @@
     width: 100%;
     border: none;
     border-bottom: solid 0.1rem rgba(0, 0, 0, 0.074);
+}
+
+.order-details-product-image-container {
+    display: flex;
+    align-items: center;
+}
+
+.order-details-product-image {
+    width: 75px;
+    height: 75px;
+    margin-right: 10px;
+    object-fit: cover;
+    object-position: top;
+}
+
+.order-details-product-row {
+    cursor: pointer;
 }

@@ -161,13 +161,13 @@ function OrderDetails() {
                             const productId = order.productDetails?._id;
 
                             return (
-                                <tr key={sizeItem._id} onClick={() => openProductModal(productId)} style={{ cursor: 'pointer' }}>
+                                <tr key={sizeItem._id} className='order-details-product-row' onClick={() => openProductModal(productId)}>
                                     <td>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <div className='order-details-product-image-container'>
                                             <img
                                                 src={order.productDetails?.images?.list[0]?.url}
                                                 alt={order.productDetails?.name}
-                                                style={{ width: '75px', height: '75px', marginRight: '10px' }}
+                                                className='order-details-product-image'
                                                 onError={(e) => { e.target.onerror = null; e.target.src = "/images/products/default.jpg" }}
                                             />
                                             <span>{order.productDetails?.name || 'Product Name'}</span>
