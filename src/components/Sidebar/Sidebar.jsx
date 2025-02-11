@@ -1,14 +1,9 @@
 // Sidebar.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import  { useState, useEffect, useCallback } from 'react';
 import './Sidebar.css';
 import Logo from '../../assets/Images/Logo1.png';
 import {
-    FaRegUser,
-    FaTachometerAlt,
-    FaChartBar,
-    FaCog,
     FaHome,
-    FaInfoCircle,
     FaVoicemail,
 } from "react-icons/fa";
 import SidebarLink from './SidebarLink'; // Import the SidebarLink component
@@ -65,6 +60,13 @@ const menuItems = [
         icon: <FaVoicemail />,
         type: 'link',
         path: '/order-managements', // Added path
+    },
+    {
+        id: 'Configuration',
+        name: 'Configuration',
+        icon: <FaVoicemail />,
+        type: 'link',
+        path: '/configuration', // Added path
     },
 
 ];

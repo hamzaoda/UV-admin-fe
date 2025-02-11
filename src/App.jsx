@@ -1,6 +1,6 @@
 // src/App.js
 
-import React, { Suspense, lazy } from 'react';
+import  { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from './redux/selectors';
@@ -13,6 +13,7 @@ import AddProperties from './pages/AddProperties/AddProperties';
 import TransactionManagements from './pages/TransactionManagements/TransactionManagements';
 import OrderManagements from './pages/OrderManagements/OrderManagements';
 import OrderDetails from './pages/OrderDetails/OrderDetails'; // Import OrderDetails
+import Configuration from './pages/Configuration/Configuration';
 
 // Lazy-loaded components for better performance
 const Login = lazy(() => import('./pages/Login/Login'));
@@ -57,6 +58,7 @@ const App = () => {
             <Route path="/transaction-managements" element={<TransactionManagements />} />
             <Route path="/order-managements" element={<OrderManagements />} />
             <Route path="/order/:orderId" element={<OrderDetails />} /> {/* Add the route for OrderDetails */}
+            <Route path="/configuration" element={<Configuration />} /> {/* Add the route for OrderDetails */}
 
             {/* Add more protected routes here */}
           </Route>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import './EmailManagements.css';
 import useApi from '../../hooks/useApi'; // Ensure the path is correct
 
