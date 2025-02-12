@@ -1,5 +1,5 @@
 // OrderDetails.jsx
-import React, { useEffect, useState, useCallback } from 'react';
+import  { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './OrderDetails.css';
 import useApi from '../../hooks/useApi'; // Assuming you have a useApi hook
@@ -56,11 +56,13 @@ function OrderDetails() {
         return price;
     };
 
-    // Calculate total order price (if still needed outside the table, you can keep it or remove it)
-    const totalOrderPrice = order?.cart?.sizes?.reduce((total, size) => {
-        const unitPrice = order.productDetails?.price || 0;
-        const priceAfterSale = calculatePriceAfterSale(unitPrice, order.productDetails?.sale || 0);
-        return total + (priceAfterSale * size.quantity);
+    // Calculate total order price - adjusted for the new structure
+    const totalOrderPrice = order?.cart?.reduce((total, cartItem) => {
+        return total + cartItem.sizes.reduce((sizeTotal, size) => {
+            const unitPrice = cartItem.productDetails?.price || 0;
+            const priceAfterSale = calculatePriceAfterSale(unitPrice, cartItem.productDetails?.sale || 0);
+            return sizeTotal + (priceAfterSale * size.quantity);
+        }, 0);
     }, 0) || 0;
 
     const openProductModal = useCallback((productId) => {
@@ -152,41 +154,44 @@ function OrderDetails() {
                     </tr>
                 </thead>
                 <tbody>
-                    {order && order.cart && order.cart.sizes && order.productDetails ? (
-                        order.cart.sizes.map((sizeItem) => {
-                            const unitPrice = order.productDetails?.price || 0;
-                            const salePercentage = order.productDetails?.sale || 0;
-                            const priceAfterSale = calculatePriceAfterSale(unitPrice, salePercentage);
-                            const rowTotalPrice = priceAfterSale * sizeItem.quantity;
-                            const productId = order.productDetails?._id;
+                    {order && order.cart && order.cart.length > 0 ? (
+                        order.cart.map((cartItem) => (
+                            cartItem.sizes.map((sizeItem) => {
+                                const unitPrice = cartItem.productDetails?.price || 0;
+                                const salePercentage = cartItem.productDetails?.sale || 0;
+                                const priceAfterSale = calculatePriceAfterSale(unitPrice, salePercentage);
+                                const rowTotalPrice = priceAfterSale * sizeItem.quantity;
+                                const productId = cartItem.productDetails?._id;
 
-                            return (
-                                <tr key={sizeItem._id} className='order-details-product-row' onClick={() => openProductModal(productId)}>
-                                    <td>
-                                        <div className='order-details-product-image-container'>
-                                            <img
-                                                src={order.productDetails?.images?.list[0]?.url}
-                                                alt={order.productDetails?.name}
-                                                className='order-details-product-image'
-                                                onError={(e) => { e.target.onerror = null; e.target.src = "/images/products/default.jpg" }}
-                                            />
-                                            <span>{order.productDetails?.name || 'Product Name'}</span>
-                                        </div>
-                                    </td>
-                                    <td>{sizeItem.size}</td>
-                                    <td>${unitPrice.toFixed(2)}</td>
-                                    <td>{salePercentage}%</td>
-                                    <td>${priceAfterSale.toFixed(2)}</td>
-                                    <td>{sizeItem.quantity}</td>
-                                    <td>${rowTotalPrice.toFixed(2)}</td>
-                                </tr>
-                            );
-                        })
+                                return (
+                                    <tr key={sizeItem._id} className='order-details-product-row' onClick={() => openProductModal(productId)}>
+                                        <td>
+                                            <div className='order-details-product-image-container'>
+                                                <img
+                                                    src={cartItem.productDetails?.images?.list[0]?.url}
+                                                    alt={cartItem.productDetails?.name}
+                                                    className='order-details-product-image'
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = "/images/products/default.jpg" }}
+                                                />
+                                                <span>{cartItem.productDetails?.name || 'Product Name'}</span>
+                                            </div>
+                                        </td>
+                                        <td>{sizeItem.size}</td>
+                                        <td>${unitPrice.toFixed(2)}</td>
+                                        <td>{salePercentage}%</td>
+                                        <td>${priceAfterSale.toFixed(2)}</td>
+                                        <td>{sizeItem.quantity}</td>
+                                        <td>${rowTotalPrice.toFixed(2)}</td>
+                                    </tr>
+                                );
+                            })
+                        ))
                     ) : (
-                        <tr><td colSpan="8">No products in order details yet.</td></tr>
+                        <tr><td colSpan="7">No products in order details yet.</td></tr>
                     )}
                 </tbody>
             </table>
+
 
             {isModalOpen && (
                 <Modal onClose={closeProductModal} contentState="slide">
