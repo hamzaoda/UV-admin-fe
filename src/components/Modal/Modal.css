@@ -14,10 +14,9 @@
     animation-fill-mode: forwards;
 }
 
-/* Modal container with transition for width */
 .modal-container {
     background-color: white;
-    border-radius: 8px;
+border-radius: var(--border-radius);
     height: 80vh;
     width: 50vw;
     position: relative;
@@ -26,7 +25,6 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation-duration: 0.4s;
     animation-fill-mode: forwards;
-    transition: max-width 0.4s ease;
     padding: 2rem;
 }
 
@@ -55,15 +53,14 @@
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-    color: #555;
+    color: black;
     width: 2rem;
     height: fit-content;
-    transition: all 0.3s ease;
 }
 
 .modal-close-button:hover {
-    color: #ff0000;
-    background-color: #55555500;
+    color: var(--danger-color);
+    background-color: transparent;
 }
 
 

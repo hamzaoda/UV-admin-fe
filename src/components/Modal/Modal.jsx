@@ -1,9 +1,8 @@
 // Modal.jsx
 
-import React, { useState } from "react";
+import { useState } from "react";
 import "./Modal.css";
 import "../../animations/fade.css"
-import "../../animations/slide.css"
 
 const Modal = ({ children, onClose, contentState }) => {
     const [isClosing, setIsClosing] = useState(false);
@@ -18,7 +17,7 @@ const Modal = ({ children, onClose, contentState }) => {
     return (
         <div className={`modal-overlay ${isClosing ? "fade-out" : "fade-in"}`}>
             <div
-                className={`modal-container ${isClosing ? "slide-out" : "slide-in"} ${contentState}`}
+                className={`modal-container`}
             >
                 <button className="modal-close-button" onClick={handleClose}>
                     &times;

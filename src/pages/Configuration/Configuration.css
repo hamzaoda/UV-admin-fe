@@ -1,0 +1,36 @@
+/* Configuration.css */
+
+.configuration-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.configuration-container h1 {
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+.configuration-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}  
+
+/* Password input container */
+.password-input-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--third-color);
+    border-radius: var(--border-radius);
+    border: solid 0.1rem var(--secondary-light-color);
+}
+
+.password-input-container label {
+    display: block;
+    margin-bottom: 0.5rem;
+}

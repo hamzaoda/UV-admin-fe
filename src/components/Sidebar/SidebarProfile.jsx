@@ -1,6 +1,5 @@
 // src/components/SidebarProfile.js
 
-import React from 'react';
 import { FaRegUser } from "react-icons/fa";
 import { PiSignOutBold } from "react-icons/pi";
 import { useDispatch } from 'react-redux';

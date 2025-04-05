@@ -1,12 +1,15 @@
 // src/pages/ProductForm/ProductForm.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import './ProductForm.css';
-import CustomCheckbox from '../../components/CustomComponents/CustomCheckbox/CustomCheckbox';
+import CustomCheckboxText from '../../components/CustomComponents/CustomCheckboxText/CustomCheckboxText'; // Imported CustomCheckboxText
 import useApi from '../../hooks/useApi';
 import useApiWithFiles from '../../hooks/useApiWithFiles';
-import { FaSpinner, FaEdit } from 'react-icons/fa';
+import { FaEdit, FaTimes, FaCheck, FaPlus } from 'react-icons/fa'; // Removed FaSpinner
 import ReactQuill from 'react-quill';
+import { motion } from "framer-motion"; // NEW: Import farmer-motion
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay'; // ADDED: Import LoadingOverlay
+
 import 'react-quill/dist/quill.snow.css'; // Import the styles
 
 const initialErrors = {
@@ -25,14 +28,24 @@ const initialErrors = {
 const MAX_IMAGE_SIZE_MB = 5;
 const MAX_VIDEO_SIZE_MB = 50;
 
+const sectionAnimation = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+};
+
+import PropTypes from 'prop-types';
+
 function ProductForm({ isEditMode = false }) {
+
+    ProductForm.propTypes = {
+        isEditMode: PropTypes.bool
+    };
 
     const { productId } = useParams();
 
     const navigate = useNavigate();
 
     // --- State Variables ---
-    const [productSku, setProductSku] = useState('');
     const [productName, setProductName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -42,23 +55,20 @@ function ProductForm({ isEditMode = false }) {
     const [videos, setVideos] = useState([]);
     const [mainImage, setMainImage] = useState(null);
     const [properties, setProperties] = useState({ sizes: [], tags: [] });
-    const [isPropertiesLoading, setIsPropertiesLoading] = useState(true);
     const [propertiesError, setPropertiesError] = useState(null);
     const [combinations, setCombinations] = useState([]);
     const [currentSize, setCurrentSize] = useState('');
     const [currentQuantity, setCurrentQuantity] = useState('');
     const [errors, setErrors] = useState(initialErrors);
-    const [selectedTags, setSelectedTags] = useState([]);
-    const [loading, setLoading] = useState(isEditMode); // Initialize loading based on edit mode
+    const [selectedTags, setSelectedTags] = useState([]); // Now multi select using checkboxes
     const [editingCombinationIndex, setEditingCombinationIndex] = useState(null);
-    const [isFormSubmitting, setIsFormSubmitting] = useState(false); // Add this line
     const [deletedImages, setDeletedImages] = useState([]); // Add deletedImages state
     const [deletedVideos, setDeletedVideos] = useState([]); // Add deletedVideos state
     const [isActive, setIsActive] = useState(true); // ADDED: State for isActive, default true
 
 
-    const { callApi: callApiFiles } = useApiWithFiles();
-    const { callApi: callApiGet, isLoading: isSubmitting, isError: isSubmissionError, error: submissionError } = useApi();
+    const { callApi: callApiFiles, isLoading: isLoadingFiles } = useApiWithFiles(); // ADDED: isLoadingFiles
+    const { callApi: callApiGet, isError: isSubmissionError, error: submissionError, isLoading: isLoadingGet } = useApi(); // ADDED: isLoadingGet
 
     // --- Calculate Final Price ---
     const calculateFinalPrice = useCallback(() => {
@@ -88,7 +98,6 @@ function ProductForm({ isEditMode = false }) {
     // --- Fetch Properties ---
     useEffect(() => {
         const fetchProperties = async () => {
-            setIsPropertiesLoading(true);
             try {
                 const response = await callApiGet({
                     url: '/properties/list',
@@ -105,8 +114,6 @@ function ProductForm({ isEditMode = false }) {
             } catch (error) {
                 console.error('Error fetching properties:', error);
                 setPropertiesError('An unexpected error occurred while fetching properties.');
-            } finally {
-                setIsPropertiesLoading(false);
             }
         };
 
@@ -118,7 +125,6 @@ function ProductForm({ isEditMode = false }) {
         // Only fetch product data if in edit mode and productId is available
         if (isEditMode && productId) {
             const fetchProduct = async () => {
-                setLoading(true); // Set loading to true when fetching starts
                 try {
                     const response = await callApiGet({
                         url: `/products/details/${productId}`,
@@ -126,7 +132,6 @@ function ProductForm({ isEditMode = false }) {
                     });
                     if (response.isSuccess && response.data) {
                         const productData = response.data;
-                        setProductSku(productData.productId || '');
                         setProductName(productData.name || '');
                         setDescription(
                             productData.description.replace(
@@ -136,7 +141,7 @@ function ProductForm({ isEditMode = false }) {
                         );
                         setPrice(productData.price?.toString() || '');
                         setSale(productData.sale?.toString() || '');
-                        setSelectedTags(productData.tags || []);
+                        setSelectedTags(productData.tags || []); // Set initial selected tags for checkboxes
                         setMainImage(productData.images?.mainImage !== undefined ? productData.images.mainImage : (productData.images?.list?.length > 0 ? 0 : null));
                         setIsActive(productData.isActive !== undefined ? productData.isActive : true); // ADDED: Set isActive from product data, default true if not present
 
@@ -161,8 +166,6 @@ function ProductForm({ isEditMode = false }) {
                 } catch (error) {
                     console.error('Error fetching product:', error);
                     alert('Failed to fetch product details.');
-                } finally {
-                    setLoading(false); // Set loading to false after fetching is complete (success or error)
                 }
             };
             fetchProduct();
@@ -181,7 +184,7 @@ function ProductForm({ isEditMode = false }) {
         setCombinations([]);
         setCurrentSize('');
         setCurrentQuantity('');
-        setSelectedTags([]);
+        setSelectedTags([]); // Clear selected tags
         setMainImage(null);
         setErrors(initialErrors);
         setDeletedImages([]); // Clear deleted images on form clear
@@ -215,6 +218,7 @@ function ProductForm({ isEditMode = false }) {
         if (!price || parseFloat(price) <= 0) {
             newErrors.price = 'Valid price is required.';
             isValid = false;
+            console.log("price error");
         }
 
         const saleValue = parseFloat(sale);
@@ -244,7 +248,7 @@ function ProductForm({ isEditMode = false }) {
             isValid = false;
         }
 
-        if (selectedTags.length === 0) {
+        if (selectedTags.length === 0) { // Adjust validation for multi select tag if needed.
             newErrors.tags = 'At least one tag must be selected.';
             isValid = false;
         }
@@ -261,7 +265,6 @@ function ProductForm({ isEditMode = false }) {
             scrollToFirstError();
             return;
         }
-        setIsFormSubmitting(true); // Set to true before making the API call
 
         const transformedProperties = Object.values(combinations.reduce((acc, comb) => {
             const color = "const"; // Assuming a constant color as per the provided payload
@@ -276,7 +279,7 @@ function ProductForm({ isEditMode = false }) {
             price: parseFloat(price),
             sale: sale ? parseFloat(sale) : 0,
             properties: transformedProperties,
-            tags: selectedTags,
+            tags: selectedTags, // Send multi selected tags for checkboxes
             mainImage: mainImage,
             mainVideo: videos.length > 0 ? 0 : undefined,
             isActive: isActive, // ADDED: Include isActive in payload
@@ -297,7 +300,7 @@ function ProductForm({ isEditMode = false }) {
                     price: parseFloat(price),
                     sale: sale ? parseFloat(sale) : 0,
                     properties: transformedProperties,
-                    tags: selectedTags,
+                    tags: selectedTags, // Send multi selected tags for checkboxes
                     mainImage: mainImage,
                     mainVideo: videos.length > 0 ? 0 : undefined,
                     deletedImages: deletedImages.length > 0 ? deletedImages : [],
@@ -330,7 +333,7 @@ function ProductForm({ isEditMode = false }) {
             console.error(`Error ${isEditMode ? 'updating' : 'adding'} product:`, error);
             alert(`An unexpected error occurred during product ${isEditMode ? 'update' : 'submission'}.`);
         } finally {
-            setIsFormSubmitting(false); // Set back to false after the API call completes (success or fail)
+            // setIsFormSubmitting(false); // REMOVED
         }
     };
 
@@ -393,7 +396,6 @@ function ProductForm({ isEditMode = false }) {
     const handleVideoUpload = (e) => {
         const files = Array.from(e.target.files);
         const maxVideos = 3;
-        const availableSlots = maxVideos - videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length;
 
         if (videos.length + files.length > maxVideos) {
             setErrors(prevErrors => ({ ...prevErrors, videos: `You can only upload a maximum of ${maxVideos} videos.` }));
@@ -539,97 +541,95 @@ function ProductForm({ isEditMode = false }) {
         setMainImage(index);
     };
 
-    // --- Render ---
-    if (isPropertiesLoading || loading) {
-        return (
-            <div className='add-product-main-container slide-in'>
-                <div className='add-product-h1-container'>
-                    <Link to="/product-managements" className="add-product-return-link">
-                        Back to Product Managements
-                    </Link>
-                    <h1 className="fade-in">{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
-                </div>
-                <div className="add-product-loading-container fade-in">
-                    <FaSpinner className="add-product-spinner" /> Loading...
-                </div>
-            </div>
-        );
-    }
+    // --- Handle Tag Selection (Checkbox Logic) ---
+    const handleTagChange = (tag) => {
+        setSelectedTags(prevSelectedTags => {
+            if (prevSelectedTags.includes(tag)) {
+                return prevSelectedTags.filter(selectedTag => selectedTag !== tag); // Deselect tag
+            } else {
+                return [...prevSelectedTags, tag]; // Select tag
+            }
+        });
+    };
 
     if (propertiesError) {
         return (
-            <div className='add-product-main-container slide-in'>
-                <div className='add-product-h1-container'>
+            <>
+                <div>
                     <Link to="/product-managements" className="add-product-return-link">
                         Back to Product Managements
                     </Link>
-                    <h1 className="fade-in">{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
+                    <h1>{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
                 </div>
-                <div className="add-product-error-container fade-in">
+                <div className="add-product-error-container">
                     <p>Error fetching properties: {propertiesError}</p>
                 </div>
-            </div>
+            </>
         );
     }
 
     return (
-        <div className='add-product-main-container slide-in'>
-            <div className='add-product-h1-container'>
-                <Link to="/product-managements" className="add-product-return-link">
+        <div>
+            <LoadingOverlay isLoading={isLoadingFiles || isLoadingGet} /> {/* ADDED: LoadingOverlay component */}
+            <div className='h1-container'>
+                <h1 >{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
+                <Link to="/product-managements" className="return-link">
                     Back to Product Managements
                 </Link>
-                <h1 className="fade-in">{isEditMode ? 'Edit Product' : 'Add New Product'}</h1>
+
             </div>
-            <form className='add-product-form' onSubmit={handleSubmit}>
+            <form className='form-section' onSubmit={handleSubmit}>
                 {/* Product Details Section */}
-                <section className='add-product-form-section fade-in'>
-                    <h2 className="fade-in">Product Details</h2>
-                    <div className='d-flex'>
-                        <div className="add-product-form-group add-product-flex-half">
-                            <label htmlFor="productId">
-                                ID
-                            </label>
-                            <input
-                                type="text"
-                                id="productId"
-                                value={productSku}
-                                readOnly
-                                className="w-100"
-                            />
+                <motion.section
+                    className='section-container form-section'
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={sectionAnimation}
+                >
+                    <h2 >Product Details</h2>
+                    <div className='form-group'>
+
+                        <div className="d-flex align-items-end"> {/* ADDED DIV */}
+                            <div className="form-group">
+                                <label htmlFor="productName">
+                                    Name<span className="add-product-required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="productName"
+                                    value={productName}
+                                    onChange={(e) => setProductName(e.target.value)}
+                                    className={`w-100 ${errors.productName ? 'input-error' : ''}`}
+                                    aria-describedby="productNameError"
+                                />
+                            </div>
+
+                            <div className='d-flex'>
+                                <CustomCheckboxText
+                                    id="isActive-true"
+                                    name="isActive"
+                                    value={true}
+                                    checked={isActive === true} // Assuming you still want to control this with radio-like behavior, keep checked as is
+                                    onChange={() => setIsActive(true)} // Keep onChange as is if radio-like behavior is intended
+                                    label="Active"
+                                />
+                                <CustomCheckboxText
+                                    id="isActive-false"
+                                    name="isActive"
+                                    value={false}
+                                    checked={isActive === false} // Assuming you still want to control this with radio-like behavior, keep checked as is
+                                    onChange={() => setIsActive(false)} // Keep onChange as is if radio-like behavior is intended
+                                    label="inActive"
+                                />
+                            </div>
                         </div>
-                        <div className="add-product-form-group add-product-flex-half"> {/* ADDED DIV */}
-                            <label htmlFor="productName">
-                                Active?<span className="add-product-required">*</span>
-                            </label>
-
-                            <CustomCheckbox
-                                id="isActive"
-                                name="isActive"
-                                checked={isActive}
-                                onChange={(e) => setIsActive(e.target.checked)}
-                            />
-                        </div>
+                        {errors.productName && <span className="error-message" id="productNameError">{errors.productName}</span>}
 
                     </div>
-                    <div className="add-product-form-group add-product-flex-half">
-                        <label htmlFor="productName">
-                            Name<span className="add-product-required">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="productName"
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                            className={`w-100 ${errors.productName ? 'add-product-input-error' : ''}`}
-                            aria-describedby="productNameError"
-                        />
-                    </div>
 
-                    <div>
-                        {errors.productName && <span className="add-product-error-message fade-in" id="productNameError">{errors.productName}</span>}
-                    </div>
 
-                    <div className='add-product-form-group'>
+                    <div className='form-group'>
                         <label htmlFor="description">
                             Description<span className="add-product-required">*</span>
                         </label>
@@ -637,7 +637,7 @@ function ProductForm({ isEditMode = false }) {
                             id="description"
                             value={description}
                             onChange={setDescription}
-                            className={`add-product-quill-editor ${errors.description ? 'add-product-input-error' : ''}`}
+                            className={`quill-editor ${errors.description ? 'input-error' : ''}`}
                             aria-describedby="descriptionError"
                             modules={{
                                 toolbar: [
@@ -660,11 +660,11 @@ function ProductForm({ isEditMode = false }) {
                                 'bold', 'italic', 'underline', 'strike', 'list', 'indent', 'direction', 'size', 'align', 'link'
                             ]}
                         />
-                        {errors.description && <span className="add-product-error-message fade-in" id="descriptionError">{errors.description}</span>}
+                        {errors.description && <span className="error-message" id="descriptionError">{errors.description}</span>}
                     </div>
-                    <div className='add-product-price-form fade-in'>
-                        <div className='d-flex'>
-                            <div className='add-product-form-group add-product-flex-half'>
+                    <div className='form-group'>
+                        <div className='d-flex-between'>
+                            <div className='form-group'>
                                 <label htmlFor="price">
                                     Price ($)<span className="add-product-required">*</span>
                                 </label>
@@ -675,11 +675,11 @@ function ProductForm({ isEditMode = false }) {
                                     onChange={(e) => setPrice(e.target.value)}
                                     min="0"
                                     step="0.01"
-                                    className={`${errors.price ? 'add-product-input-error' : ''}`}
+                                    className={`${errors.price ? 'input-error' : ''}`}
                                     aria-describedby="priceError"
                                 />
                             </div>
-                            <div className='add-product-form-group add-product-flex-half'>
+                            <div className='form-group'>
                                 <label htmlFor="sale">Sale (%)</label>
                                 <input
                                     type="number"
@@ -689,11 +689,11 @@ function ProductForm({ isEditMode = false }) {
                                     min="0"
                                     max="100"
                                     step="0.01"
-                                    className={`${errors.sale ? 'add-product-input-error' : ''}`}
+                                    className={`${errors.sale ? 'input-error' : ''}`}
                                     aria-describedby="saleError"
                                 />
                             </div>
-                            <div className='add-product-form-group add-product-flex-half fade-in'>
+                            <div className='form-group'>
                                 <label htmlFor="finalPrice">Final Price</label>
                                 <input
                                     type="number"
@@ -702,160 +702,170 @@ function ProductForm({ isEditMode = false }) {
                                     min="0"
                                     max="100"
                                     step="0.01"
-                                    className={`${errors.sale ? 'add-product-input-error' : ''}`}
+                                    className={`${errors.sale ? 'input-error' : ''}`}
                                     aria-describedby="finalPriceError"
                                     readOnly
                                 />
                             </div>
                         </div>
-                        {errors.price && <span className="add-product-error-message fade-in" id="priceError">{errors.price}</span>}
-                        {errors.sale && <span className="add-product-error-message fade-in" id="saleError">{errors.sale}</span>}
+                        {errors.price && <span className="error-message" id="priceError">{errors.price}</span>}
+                        {errors.sale && <span className="error-message" id="saleError">{errors.sale}</span>}
+
                     </div>
-                </section>
+                </motion.section>
 
                 {/* Media Uploads Section */}
-                <section className='add-product-form-section fade-in'>
-                    <h2 className="fade-in">Media Uploads</h2>
-                    <div className="add-product-media-items-container">
-                        {/* Image Upload */}
-                        <div className="add-product-media-item slide-in">
-                            <div className='add-product-form-group'>
-                                <label htmlFor="images">
-                                    Main Image(s) <span className="add-product-required">*</span>
-                                </label>
-                                <input
-                                    type="file"
-                                    id="images"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageUpload}
-                                    disabled={images.filter(img => !img.tempKey || !img.tempKey.startsWith('existing-image')).length >= 10}
-                                    className={`${errors.images ? 'add-product-input-error' : ''}`}
-                                    aria-describedby="imagesError"
-                                />
-                                {images.filter(img => !img.tempKey || !img.tempKey.startsWith('existing-image')).length > 0 && <small className="fade-in">{`${images.filter(img => !img.tempKey || !img.tempKey.startsWith('existing-image')).length}/10 images uploaded`}</small>}
-                                {errors.images && <span className="add-product-error-message fade-in" id="imagesError">{errors.images}</span>}
-                            </div>
-                            <div className="add-product-uploaded-files fade-in">
-                                {images.map((image, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="add-product-uploaded-file slide-in"
-                                        onClick={() => handleSelectMainImage(idx)}
-                                        style={{ cursor: 'pointer', border: mainImage === idx ? '2px solid #007bff' : '1px solid #ddd' }}
-                                        aria-label={`Select image ${idx + 1} as main image`}
-                                        tabIndex={0}
-                                        onKeyPress={(e) => { if (e.key === 'Enter') handleSelectMainImage(idx); }}
-                                    >
-                                        <img src={image.url} alt={`Upload Preview ${idx + 1}`} className="add-product-preview-image" />
-                                        {mainImage === idx && <div className="add-product-main-image-label fade-in">Main Image Selected</div>}
-                                        <button
-                                            className='add-product-img-x-btn'
-                                            type="button"
-                                            onClick={(e) => { e.stopPropagation(); handleRemoveImage(idx); }}
-                                            aria-label={`Remove image ${idx + 1}`}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                <motion.section
+                    className='section-container form-section'
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={sectionAnimation}
+                >
+                    <h2 >Media Uploads</h2>
 
-                        {/* Video Upload */}
-                        <div className="add-product-media-item slide-in">
-                            <div className='add-product-form-group'>
-                                <label htmlFor="videos">Video(s)</label>
-                                <input
-                                    type="file"
-                                    id="videos"
-                                    accept="video/*"
-                                    multiple
-                                    onChange={handleVideoUpload}
-                                    disabled={videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length >= 3}
-                                    className={`${errors.videos ? 'add-product-input-error' : ''}`}
-                                    aria-describedby="videosError"
-                                />
-                                {videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length > 0 && <small className="fade-in">{`${videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length}/3 videos uploaded`}</small>}
-                                {errors.videos && <span className="add-product-error-message fade-in" id="videosError">{errors.videos}</span>}
-                            </div>
-                            <div className="add-product-uploaded-files fade-in">
-                                {videos.map((video, idx) => (
-                                    <div key={idx} className="add-product-uploaded-file slide-in">
-                                        <video width="100" height="100" controls>
-                                            <source src={video ? video.url : ''} type={video?.contentType} />
-                                            Your browser does not support the video tag.
-                                        </video>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveVideo(idx)}
-                                            className="add-product-img-x-btn fade-in"
-                                            aria-label={`Remove video ${idx + 1}`}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    <div className='form-group'>
+                        <input
+                            type="file"
+                            id="images"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageUpload}
+                            disabled={images.filter(img => !img.tempKey || !img.tempKey.startsWith('existing-image')).length >= 10}
+                            className={`${errors.images ? 'input-error' : ''}`}
+                            aria-describedby="imagesError"
+                        />
+                        <label className='upload-images-btn' htmlFor='images'>Upload Images</label>
+                        {images.filter(img => !img.tempKey || !img.tempKey.startsWith('existing-image')).length > 0 &&
+                            <div>{`${images.filter(img => !img.tempKey || !img.tempKey.startsWith('existing-image')).length}/10 images uploaded`}</div>}
+                        {errors.images && <span className="error-message" id="imagesError">{errors.images}</span>}
                     </div>
-                </section>
+
+                    {images && images.length > 0 && (
+                        <div className="uploaded-files">
+                            {images.map((image, idx) => (
+                                <div
+                                    key={idx}
+                                    className="uploaded-file"
+                                    onClick={() => handleSelectMainImage(idx)}
+                                    style={{ cursor: 'pointer', border: mainImage === idx ? '0.15rem solid var(--secondary-color)' : '0.15rem solid var(--secondary-light-color)' }}
+                                    aria-label={`Select image ${idx + 1} as main image`}
+                                    tabIndex={0}
+                                >
+                                    <img src={image.url} alt={`Upload Preview ${idx + 1}`} className="preview-image" />
+                                    <button
+                                        className='img-x-btn'
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleRemoveImage(idx); }}
+                                        aria-label={`Remove image ${idx + 1}`}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <div className='form-group'>
+                        <label className='upload-images-btn' htmlFor="videos">Upload Videos</label>
+                        <input
+                            type="file"
+                            id="videos"
+                            accept="video/*"
+                            multiple
+                            onChange={handleVideoUpload}
+                            disabled={videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length >= 3}
+                            className={`${errors.videos ? 'input-error' : ''}`}
+                            aria-describedby="videosError"
+                        />
+                        {videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length > 0 &&
+                            <small >{`${videos.filter(vid => !vid.tempKey || !vid.tempKey.startsWith('existing-video')).length}/3 videos uploaded`}</small>}
+                        {errors.videos && <span className="error-message" id="videosError">{errors.videos}</span>}
+                    </div>
+                    {videos && videos.length > 0 && (
+                        <div className="uploaded-files ">
+                            {videos.map((video, idx) => (
+                                <div key={idx} className="uploaded-file">
+                                    <video controls className="preview-image">
+                                        <source src={video ? video.url : ''} type={video?.contentType} />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveVideo(idx)}
+                                        className="img-x-btn "
+                                        aria-label={`Remove video ${idx + 1}`}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </motion.section>
 
                 {/* Product Properties Section */}
-                <section className='add-product-form-section fade-in'>
-                    <h2 className="fade-in">Product Properties</h2>
-                    <div className="add-product-property-form">
-                        <div className='add-product-form-group'>
-                            <label htmlFor="currentSize">
-                                Size<span className="add-product-required">*</span>
-                            </label>
-                            <select
-                                id="currentSize"
-                                value={currentSize}
-                                onChange={(e) => setCurrentSize(e.target.value)}
-                                className={`add-product-property-input ${errors.combination ? 'add-product-input-error' : ''}`}
-                                aria-describedby="currentSizeError"
-                            >
+                <motion.section
+                    className='section-container form-section'
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={sectionAnimation}
+                >
+                    <h2 >Product Properties</h2>
+                    <div className='form-group'>
+                        <div className="d-flex-between align-items-end">
+                            <div className='form-group'>
+                                <label htmlFor="currentSize">
+                                    Size<span className="add-product-required">*</span>
+                                </label>
+                                <select
+                                    id="currentSize"
+                                    value={currentSize}
+                                    onChange={(e) => setCurrentSize(e.target.value)}
+                                    className={`add-product-property-input ${errors.combination ? 'input-error' : ''}`}
+                                    aria-describedby="currentSizeError"
+                                >
 
-                                <option value="">Select Size</option>
-                                {properties.sizes.map((size, idx) => (
-                                    <option
-                                        key={idx}
-                                        value={size}
-                                        disabled={combinations.some(comb => comb.size === size)}
-                                    >
-                                        {size}
-                                    </option>
-                                ))}
-                            </select>
+                                    <option value="">Select Size</option>
+                                    {properties.sizes.map((size, idx) => (
+                                        <option
+                                            key={idx}
+                                            value={size}
+                                            disabled={combinations.some(comb => comb.size === size)}
+                                        >
+                                            {size}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className='form-group'>
+                                <label htmlFor="currentQuantity">
+                                    Quantity<span className="add-product-required">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="currentQuantity"
+                                    placeholder="Quantity"
+                                    value={currentQuantity}
+                                    onChange={(e) => setCurrentQuantity(e.target.value)}
+                                    min="0"
+                                    className={`add-product-property-input ${errors.combination ? 'input-error' : ''}`}
+                                    aria-describedby="currentQuantityError"
+                                />
+                            </div>
+
+                            <button type="button" onClick={handleAddCombination}>
+                                <FaPlus />
+                            </button>
                         </div>
-
-                        <div className='add-product-form-group'>
-                            <label htmlFor="currentQuantity">
-                                Quantity<span className="add-product-required">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                id="currentQuantity"
-                                placeholder="Quantity"
-                                value={currentQuantity}
-                                onChange={(e) => setCurrentQuantity(e.target.value)}
-                                min="0"
-                                className={`add-product-property-input ${errors.combination ? 'add-product-input-error' : ''}`}
-                                aria-describedby="currentQuantityError"
-                            />
-                        </div>
-
-                        <button className='add-product-add-property-btn fade-in' type="button" onClick={handleAddCombination}>
-                            + Add
-                        </button>
-                        {errors.combination && <span className="add-product-error-message fade-in">{errors.combination}</span>}
+                        {errors.combination && <span className="error-message">{errors.combination}</span>}
                     </div>
 
                     {/* Display combinations */}
                     {combinations.length > 0 && (
-                        <div className="add-product-properties-submitted fade-in">
-                            <table className="add-product-combinations-table slide-in">
+                        <div className="table-container">
+                            <table className="combinations-table">
                                 <thead>
                                     <tr>
                                         <th style={{ width: '33%' }}>Size</th>
@@ -865,7 +875,7 @@ function ProductForm({ isEditMode = false }) {
                                 </thead>
                                 <tbody>
                                     {combinations.map((combination, idx) => (
-                                        <tr key={idx} className="fade-in">
+                                        <tr key={idx} >
                                             <td>{combination.size}</td>
                                             <td>
                                                 {editingCombinationIndex === idx ? (
@@ -887,22 +897,22 @@ function ProductForm({ isEditMode = false }) {
                                             </td>
                                             <td>
                                                 {editingCombinationIndex === idx ? (
-                                                    <div className="add-product-actions-container">
+                                                    <div className="d-flex-center">
                                                         <button
                                                             type="button"
                                                             onClick={() => handleSaveCombination(idx, combinations[idx].quantity)}
-                                                            className='add-product-save-btn fade-in'
+                                                            className='success-btn '
                                                             aria-label={`Save combination - ${combination.size}`}
                                                         >
-                                                            Save
+                                                            <FaCheck />
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <div className="add-product-actions-container">
+                                                    <div className="d-flex-center">
                                                         <button
                                                             type="button"
                                                             onClick={() => handleEditCombination(idx)}
-                                                            className='add-product-edit-btn fade-in'
+                                                            className='edit-btn'
                                                             aria-label={`Edit combination - ${combination.size}`}
                                                         >
                                                             <FaEdit />
@@ -910,10 +920,10 @@ function ProductForm({ isEditMode = false }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveCombination(idx)}
-                                                            className='add-product-x-btn fade-in'
+                                                            className='delete-btn '
                                                             aria-label={`Remove combination  - ${combination.size}`}
                                                         >
-                                                            ×
+                                                            <FaTimes />
                                                         </button>
                                                     </div>
                                                 )}
@@ -924,40 +934,44 @@ function ProductForm({ isEditMode = false }) {
                             </table>
                         </div>
                     )}
-                </section>
+                </motion.section>
 
                 {/* Tags Section */}
-                <section className='add-product-form-section fade-in'>
-                    <h2 className="fade-in">Tags</h2>
-                    <div className="add-product-flex-form-group">
-                        {properties.tags.map((tag, idx) => (
-                            <CustomCheckbox
-                                key={idx}
-                                id={`tag-${idx}`}
-                                name="tags"
-                                value={tag}
-                                checked={selectedTags.includes(tag)}
-                                onChange={(e) => {
-                                    setSelectedTags(prevTags =>
-                                        e.target.checked ? [...prevTags, tag] : prevTags.filter(t => t !== tag)
-                                    );
-                                }}
-                                label={tag}
-                            />
-                        ))}
+                <motion.section
+                    className='section-container form-section'
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={sectionAnimation}
+                >
+                    <h2 >Tags</h2>
+                    <div className='form-group'>
+                        <div className="uploaded-files">
+                            {properties.tags.map((tag, idx) => (
+                                <CustomCheckboxText
+                                    key={idx}
+                                    id={`tag-${idx}`}
+                                    name="tags"
+                                    value={tag}
+                                    checked={selectedTags.includes(tag)} // Check if tag is in selectedTags array
+                                    onChange={() => handleTagChange(tag)} // Pass tag value to handleTagChange
+                                    label={tag}
+                                />
+                            ))}
+                        </div>
+                        {errors.tags && <span className="error-message">{errors.tags}</span>}
                     </div>
-                    {errors.tags && <span className="add-product-error-message fade-in">{errors.tags}</span>}
-                </section>
+                </motion.section>
 
                 {/* Submit Button */}
-                <div className="add-product-submit-section fade-in">
-                    <button type="submit" className="add-product-submit-button slide-in" disabled={isFormSubmitting}>
-                        {isFormSubmitting ? <FaSpinner className="add-product-spinner" /> : (isEditMode ? 'Edit Product' : 'Add Product')}
+                <div className="add-product-submit-section ">
+                    <button type="submit" className="add-product-submit-button" > {/* Removed disabled={isFormSubmitting} */}
+                        {isEditMode ? 'Submit Edit Product' : 'Submit Add Product'} {/* Removed spinner logic */}
                     </button>
                 </div>
 
                 {isSubmissionError && (
-                    <div className="add-product-api-error-message fade-in">
+                    <div className="add-product-api-error-message ">
                         Error {isEditMode ? 'updating' : 'adding'} product: {submissionError?.message || 'An unknown error occurred.'}
                     </div>
                 )}

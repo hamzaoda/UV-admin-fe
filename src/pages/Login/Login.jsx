@@ -1,19 +1,21 @@
 // src/components/Login.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import "./Login.css"; // Import the CSS file
 import {
   validateEmail,
   validatePassword,
-} from "../../Helpers/validateFunctions"; // Import the validation functions
+} from "../../helpers/validateFunctions"; // Import the validation functions
 import useApi from '../../hooks/useApi';
 import { useNavigate } from 'react-router-dom';
 import { showError } from '../../helpers/toastHandler';
 import Logo from '../../assets/Images/Logo.png';
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay'; // ADDED: Import LoadingOverlay
+import '../ProductForm/ProductForm.css'
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { callApi, isLoading, isError, error } = useApi();
+  const { callApi, isLoading } = useApi();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,8 +29,6 @@ function Login() {
       showError("Email or Password not correct");
       return;
     }
-
-    const dataReq = { email, password };
 
     try {
       const response = await callApi({
@@ -54,34 +54,37 @@ function Login() {
 
   return (
     <div className="sign-page">
+      <LoadingOverlay isLoading={isLoading} /> {/* ADDED: LoadingOverlay component */}
       <img src={Logo} className='logo' alt="Logo" />
       <form id="loginForm" onSubmit={handleSubmit} className="sign-container">
         <h1>Login</h1>
-        <div>
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="form-control"
-          />
+        <div className="form-section">
+          <div>
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="form-group"
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-group"
+            />
+          </div>
+          <button className="w-100 btn btn-primary" type="submit" disabled={isLoading}>
+            {isLoading ? 'logging ...' : 'Login'}
+          </button>
         </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="form-control"
-          />
-        </div>
-        <button className="w-100 btn btn-primary" type="submit" disabled={isLoading}>
-          {isLoading ? 'logging ...' : 'Login'}
-        </button>
       </form >
     </div >
   );

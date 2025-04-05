@@ -1,6 +1,6 @@
-import  { useState, useEffect } from 'react';
-import './EmailManagements.css';
+import { useState, useEffect } from 'react';
 import useApi from '../../hooks/useApi'; // Ensure the path is correct
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay'; // ADDED: Import LoadingOverlay
 
 function EmailManagements() {
   const [mode, setMode] = useState('view'); // Modes: 'view' or 'edit'
@@ -112,67 +112,64 @@ function EmailManagements() {
   };
 
   return (
-    <div className="email-managements-container section-container">
+    <div>
+      <LoadingOverlay isLoading={isLoading} /> {/* ADDED: LoadingOverlay component */}
       <h1>Email Management</h1>
-
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <form>
-          <div className="d-flex">
-            <div className="form-group">
-              <label htmlFor="template">Template</label>
-              <select
-                name="template"
-                value={formData.template}
-                onChange={handleChange}
-                disabled={mode === 'edit'} // Disable in view mode
-              >
-                <option value="welcome">Welcome</option> {/* Only 'welcome' option */}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="subject">Subject</label>
-              <input
-                type="text"
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                disabled={mode === 'view'} // Disable in view mode
-                required // Assuming subject is required
-              />
-            </div>
-          </div>
+      <form className='form-section section-container'>
+        <div className="d-flex">
           <div className="form-group">
-            <label htmlFor="body">Body</label>
-            <textarea
-              name="body"
-              value={formData.body}
+            <label htmlFor="template">Template</label>
+            <select
+              name="template"
+              value={formData.template}
+              onChange={handleChange}
+              disabled={mode === 'edit'} // Disable in view mode
+            >
+              <option value="welcome">Welcome</option> {/* Only 'welcome' option */}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="subject">Subject</label>
+            <input
+              type="text"
+              name="subject"
+              value={formData.subject}
               onChange={handleChange}
               disabled={mode === 'view'} // Disable in view mode
-              required // Assuming body is required
+              required // Assuming subject is required
             />
           </div>
+        </div>
+        <div className="form-group">
+          <label htmlFor="body">Body</label>
+          <textarea
+            name="body"
+            value={formData.body}
+            onChange={handleChange}
+            disabled={mode === 'view'} // Disable in view mode
+            required
+            className='w-100'
+          />
+        </div>
 
-          <div className="button-group">
-            {mode === 'view' ? (
-              <button type="button" onClick={handleEditClick} className="button-edit">
-                Edit
+        <div className="button-group">
+          {mode === 'view' ? (
+            <button type="button" onClick={handleEditClick} className="button-edit">
+              Edit
+            </button>
+          ) : (
+            <div className="d-flex">
+              <button type="button" onClick={handleSaveClick} className="">
+                Save
               </button>
-            ) : (
-              <div className="d-flex">
-                <button type="button" onClick={handleSaveClick} className="">
-                  Save
-                </button>
-                <button type="button" onClick={handleCancelClick} className="button-danger">
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-        </form>
-      )}
+              <button type="button" onClick={handleCancelClick} className="button-danger">
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </form>
 
       {/* Display error message if there is an error */}
       {isError && (

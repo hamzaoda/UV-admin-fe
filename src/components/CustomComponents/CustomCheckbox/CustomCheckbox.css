@@ -1,7 +1,7 @@
 :root {
     --checkbox-size: 1.5rem;
-    --checkbox-border-color: var(--third-color);
-    --checkbox-checked-color: var(--fourth-color);
+    --checkbox-border-color: var(--secondary-color);
+    --checkbox-checked-color: var(--secondary-color);
     --checkbox-disabled-color: #e6e6e6;
 }
 
@@ -39,8 +39,7 @@
     width: var(--size);
     height: var(--size);
     border: 2px solid var(--checkbox-border-color);
-    border-radius: 4px;
-    transition: all 0.5s ease;
+border-radius: var(--border-radius);
     position: relative;
 
 }
@@ -53,8 +52,6 @@
     stroke-dasharray: 33;
     stroke-dashoffset: 33;
     fill: none;
-
-    transition: stroke-dashoffset 0.3s ease;
 }
 
 .label-text {

@@ -1,9 +1,10 @@
-// src/pages/AddProperties/AddProperties.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './AddProperties.css';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaTimes, FaCheck } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import useApi from '../../hooks/useApi'; // Import the useApi hook
+import CustomCheckboxText from '../../components/CustomComponents/CustomCheckboxText/CustomCheckboxText'; // Import your custom checkbox
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay'; // ADDED: Import LoadingOverlay
 
 function AddProperties() {
     // const propertyCategories = ['sizes', 'tags', 'colors']; // Lowercase keys
@@ -14,7 +15,7 @@ function AddProperties() {
     const [currentEdit, setCurrentEdit] = useState({ category: '', oldValue: '', newValue: '' });
 
     // Integrate the useApi hook
-    const { callApi, isLoading, isError, error } = useApi();
+    const { callApi, isLoading, isError, error } = useApi(); // ADDED: isLoading
 
     // State for properties, initialize as empty with lowercase keys
     const [properties, setProperties] = useState({
@@ -23,11 +24,7 @@ function AddProperties() {
         colors: [],
     });
 
-    // Separate loading state for initial fetch
-    const [isInitialLoading, setIsInitialLoading] = useState(true); // New state
 
-    // Separate loading state for operations
-    const [operationLoading, setOperationLoading] = useState(false); // New state
 
     // Fetch properties from the API on mount
     useEffect(() => {
@@ -53,8 +50,6 @@ function AddProperties() {
                 }
             } catch (error) {
                 console.error('Fetch Properties Error:', error);
-            } finally {
-                setIsInitialLoading(false); // Set to false after fetch
             }
         };
 
@@ -80,7 +75,6 @@ function AddProperties() {
         };
         setProperties(updatedProperties);
         setNewProperty('');
-        setOperationLoading(true); // Start operation loading
 
         // Make API call to update properties
         try {
@@ -111,8 +105,6 @@ function AddProperties() {
                 [category]: prevProperties[category].filter((item) => item !== trimmedProperty),
             }));
             alert('An unexpected error occurred.');
-        } finally {
-            setOperationLoading(false); // End operation loading
         }
     };
 
@@ -125,7 +117,6 @@ function AddProperties() {
                 [category]: properties[category].filter((item) => item !== value),
             };
             setProperties(updatedProperties);
-            setOperationLoading(true); // Start operation loading
 
             // Make API call to update properties
             try {
@@ -156,8 +147,6 @@ function AddProperties() {
                     [category]: [...prevProperties[category], value],
                 }));
                 alert('An unexpected error occurred.');
-            } finally {
-                setOperationLoading(false); // End operation loading
             }
         }
     };
@@ -193,7 +182,6 @@ function AddProperties() {
         setProperties(updatedProperties);
         setIsEditing(false);
         setCurrentEdit({ category: '', oldValue: '', newValue: '' });
-        setOperationLoading(true); // Start operation loading
 
         // Make API call to update properties
         try {
@@ -228,8 +216,6 @@ function AddProperties() {
                 ),
             }));
             alert('An unexpected error occurred.');
-        } finally {
-            setOperationLoading(false); // End operation loading
         }
     };
 
@@ -239,118 +225,111 @@ function AddProperties() {
         setCurrentEdit({ category: '', oldValue: '', newValue: '' });
     };
 
-    // Render logic
-    if (isInitialLoading) {
-        return <div>Loading properties...</div>; // Initial loading indicator
-    }
+    // Handler for tab change with checkbox
+    const handleTabChange = (category) => {
+        setActiveTab(category);
+    };
 
     if (isError) {
         return <div>Error fetching properties: {error.message}</div>; // Error display
     }
 
     return (
-        <div className="add-properties-container slide-in">
-            <div className='add-product-h1-container'>
+        <>
+            <LoadingOverlay isLoading={isLoading} /> {/* ADDED: LoadingOverlay component */}
+            <div className='h1-container'>
+                <h1>Manage Product Properties</h1>
+
                 <Link to="/add-product" className="return-link">
                     Back to Add Product
                 </Link>
-                <h1 className="fade-in">Manage Product Properties</h1>
-
-                <div></div>
-
             </div>
 
-            {/* Tab Navigation */}
-            <div className="tabs">
+            {/* Tab Navigation with CustomCheckboxText */}
+            <div className="tabs-container">
                 {propertyCategories.map((category) => (
-                    <button
-                        type="button" // Explicitly define type
-                        key={category}
-                        className={`tab-button ${activeTab === category ? 'active' : ''}`}
-                        onClick={() => setActiveTab(category)}
-                        disabled={operationLoading} // Disable tabs during operations
-                    >
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </button>
+                    <div key={category}>
+                        <CustomCheckboxText
+                            id={`tab-${category}`}
+                            name="propertyTab"
+                            value={category}
+                            checked={activeTab === category}
+                            onChange={() => handleTabChange(category)}
+                            label={category.charAt(0).toUpperCase() + category.slice(1)}
+                        />
+                    </div>
                 ))}
             </div>
 
             {/* Active Tab Content */}
-            <div className="tab-content">
+            <div className="section-container form-section">
                 <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
                 {/* Add New Property */}
-                <div className="add-new-property">
+                <div className="d-flex">
                     <input
                         type="text"
                         placeholder={`Add new ${activeTab.slice(0, -1)}`}
                         value={newProperty}
                         onChange={(e) => setNewProperty(e.target.value)}
-                        className="new-property-input"
+                        className="w-100"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault(); // Prevent default behavior
                                 handleAddProperty(activeTab);
                             }
                         }}
-                        disabled={operationLoading} // Disable input during operations
                     />
                     <button
                         type="button"
-                        className="add-btn"
                         onClick={() => handleAddProperty(activeTab)}
-                        disabled={operationLoading} // Disable button during operations
                     >
-                        <FaPlus /> {operationLoading ? 'Adding...' : 'Add'}
+                        <FaPlus />
                     </button>
                 </div>
 
                 {/* List of Properties */}
-                <ul className="property-list">
+                <ul className="form-section">
                     {properties[activeTab] && properties[activeTab].map((property, index) => (
-                        <li key={index} className="property-item">
+                        <li key={index} className="d-flex-between">
                             {isEditing && currentEdit.category === activeTab && currentEdit.oldValue === property ? (
-                                <div className='add-properties-edit-container'>
+                                <>
                                     <input
                                         type="text"
                                         value={currentEdit.newValue}
                                         onChange={(e) => setCurrentEdit({ ...currentEdit, newValue: e.target.value })}
-                                        className="edit-input"
+                                        className="w-100"
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault(); // Prevent form submission
                                                 handleSaveEdit();
                                             }
                                         }}
-                                        disabled={operationLoading} // Disable input during operations
                                     />
-                                    <div className='add-properties-save-cancel-btn-container'>
+                                    <div className='d-flex'>
                                         <button
                                             type="button"
-                                            className="save-btn"
+                                            className="success-btn"
                                             onClick={handleSaveEdit}
-                                            disabled={operationLoading} // Disable button during operations
                                         >
-                                            Save
+                                            <FaCheck />
                                         </button>
                                         <button
                                             type="button"
-                                            className="cancel-btn"
+                                            className="delete-btn"
                                             onClick={handleCancelEdit}
-                                            disabled={operationLoading} // Disable button during operations
                                         >
-                                            Cancel
+                                            <FaTimes />
                                         </button>
                                     </div>
-                                </div>
+                                </>
                             ) : (
                                 <>
                                     <span>{property}</span>
-                                    <div className="action-buttons">
+                                    <div className="d-flex">
                                         <button
                                             type="button"
                                             className="edit-btn"
                                             onClick={() => handleEditInitiate(activeTab, property)}
-                                            disabled={operationLoading} // Disable button during operations
                                         >
                                             <FaEdit />
                                         </button>
@@ -358,7 +337,6 @@ function AddProperties() {
                                             type="button"
                                             className="delete-btn"
                                             onClick={() => handleDeleteProperty(activeTab, property)}
-                                            disabled={operationLoading} // Disable button during operations
                                         >
                                             <FaTrash />
                                         </button>
@@ -372,7 +350,7 @@ function AddProperties() {
                     )}
                 </ul>
             </div>
-        </div>
+        </>
     );
 }
 

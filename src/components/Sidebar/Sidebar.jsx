@@ -1,10 +1,15 @@
 // Sidebar.jsx
-import  { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './Sidebar.css';
 import Logo from '../../assets/Images/Logo1.png';
 import {
-    FaHome,
-    FaVoicemail,
+    FaUsers,
+    FaEnvelope,
+    FaBoxes,
+    FaPlus,
+    FaCogs,
+    FaClipboardList,
+    FaBuilding
 } from "react-icons/fa";
 import SidebarLink from './SidebarLink'; // Import the SidebarLink component
 import SidebarProfile from './SidebarProfile';
@@ -15,56 +20,49 @@ const menuItems = [
     {
         id: 'userManagements',
         name: 'User Managements',
-        icon: <FaHome />,
+        icon: <FaUsers />,
         type: 'link',
         path: '/user-managements', // Added path
     },
     {
         id: 'EmailManagements',
         name: 'Email Managements',
-        icon: <FaVoicemail />,
+        icon: <FaEnvelope />,
         type: 'link',
         path: '/email-managements', // Added path
     },
     {
         id: 'ProductManagements',
         name: 'Product Managements',
-        icon: <FaVoicemail />,
+        icon: <FaBoxes />,
         type: 'link',
         path: '/product-managements', // Added path
     },
     {
         id: 'AddProduct',
         name: 'Add Product',
-        icon: <FaVoicemail />,
+        icon: <FaPlus />,
         type: 'link',
         path: '/add-product', // Added path
     },
     {
         id: 'AddProperties',
         name: 'Add Properties',
-        icon: <FaVoicemail />,
+        icon: <FaBuilding />,
         type: 'link',
         path: '/add-properties', // Added path
     },
     {
-        id: 'TransactionManagements',
-        name: 'Transaction Managements',
-        icon: <FaVoicemail />,
-        type: 'link',
-        path: '/transaction-managements', // Added path
-    },
-    {
         id: 'OrderManagements',
         name: 'Order Managements',
-        icon: <FaVoicemail />,
+        icon: <FaClipboardList />,
         type: 'link',
         path: '/order-managements', // Added path
     },
     {
         id: 'Configuration',
         name: 'Configuration',
-        icon: <FaVoicemail />,
+        icon: <FaCogs />,
         type: 'link',
         path: '/configuration', // Added path
     },

@@ -1,28 +1,26 @@
-.logo{
+.logo {
     margin-top: 2rem;
     width: 13rem;
 }
 
-.sign-page{
+.sign-page {
     display: flex;
     flex-direction: column;
     justify-content: start;
     align-items: center;
     height: 100vh;
-    background: var(--sixth-color);
+    background: var(--third-color);
     gap: 2rem;
 }
 
 .sign-container {
-    display: block;
     margin: 0 auto;
     padding: 1.5rem;
-    border: 1px solid var(--third-color);
+    border: 1px solid var(--secondary-color);
     background-color: white;
-    box-shadow: var(--box-shadow2);
-    border-radius: 0.3rem;
+    border-radius: var(--border-radius);
     text-align: center;
-    width: fit-content;
+    width: 25vw;
     animation: fadeIn 0.5s ease-out;
     text-align: start;
 }

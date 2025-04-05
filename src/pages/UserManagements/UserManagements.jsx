@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import './UserManagements.css';
+import { useState, useEffect } from 'react';
 import useApi from '../../hooks/useApi';
 import ReactPaginate from 'react-paginate'; // Import react-paginate
+import '../ManagementsStyles.css';
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay'; // ADDED: Import LoadingOverlay
 
 function UserManagements() {
     const [currentPage, setCurrentPage] = useState(0); // 0-based index for react-paginate
     const usersPerPage = 9; // Number of users per page
     const [users, setUsers] = useState([]); // State to store fetched users
     const [isSendingEmail, setIsSendingEmail] = useState(false); // Loading state for sending email
-    const { callApi, isLoading, isError, error } = useApi();
+    const { callApi, isLoading } = useApi(); // ADDED: isLoading
 
     // Fields to display in the table
     const fields = ["email", "country", "createdAt"]; // Added "country"
@@ -74,60 +75,58 @@ function UserManagements() {
     };
 
     return (
-        <div className="user-managements-container">
-            {isSendingEmail && (
-                <div className="loading-overlay">
-                    <div className="loading-spinner"></div>
-                </div>
-            )}
+        <div>
+            <LoadingOverlay isLoading={isLoading || isSendingEmail} /> {/* ADDED: LoadingOverlay component */}
 
-            <div className='user-managements-header-container'>
+            <h1>User Management</h1>
+
+            <div className='managements-controls'>
                 <select className='user-managements-select'>
                     <option value="Welcome">Welcome</option>
                 </select>
-                <h1>User Management</h1>
+
                 <button
                     className='user-managements-btn'
                     onClick={handleSendEmail}
-                    disabled={isSendingEmail} // Disable button while sending email
+                    disabled={isSendingEmail || isLoading} // Disable button while sending email or fetching users
                 >
-                    {isSendingEmail ? 'Sending...' : 'Send Email'}
+                    {isSendingEmail || isLoading ? 'Sending...' : 'Send Email'}
                 </button>
             </div>
-
-            <table className="user-managements-table">
-                <thead>
-                    <tr>
-                        {fields.map((field) => (
-                            <th key={field}>
-                                {field === 'createdAt'
-                                    ? 'Date'
-                                    : field.charAt(0).toUpperCase() + field.slice(1)}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {currentUsers.length === 0 ? (
+            <div className='table-container'>
+                <table>
+                    <thead>
                         <tr>
-                            <td colSpan={fields.length}>No users found.</td>
+                            {fields.map((field) => (
+                                <th key={field}>
+                                    {field === 'createdAt'
+                                        ? 'Date'
+                                        : field.charAt(0).toUpperCase() + field.slice(1)}
+                                </th>
+                            ))}
                         </tr>
-                    ) : (
-                        currentUsers.map((user) => (
-                            <tr key={user._id}>
-                                {fields.map((field) => (
-                                    <td key={field}>
-                                        {field === 'createdAt'
-                                            ? new Date(user.createdAt).toLocaleDateString()
-                                            : user[field]}
-                                    </td>
-                                ))}
+                    </thead>
+                    <tbody>
+                        {currentUsers.length === 0 ? (
+                            <tr>
+                                <td colSpan={fields.length}>No users found.</td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-
+                        ) : (
+                            currentUsers.map((user) => (
+                                <tr key={user._id}>
+                                    {fields.map((field) => (
+                                        <td key={field}>
+                                            {field === 'createdAt'
+                                                ? new Date(user.createdAt).toLocaleDateString()
+                                                : user[field]}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
             {/* Pagination Controls using react-paginate */}
             {totalPages > 1 && (
                 <div className="pagination-container">

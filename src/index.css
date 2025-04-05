@@ -7,56 +7,62 @@
 /* Root variables for consistent theming */
 /* -------------------------------------------------- */
 :root {
-    --primary-color: #20180f;
-    --secondary-color: #471f0b;
-    --third-color: #f26822;
-    --fourth-color: #d27131;
-    --fifth-color: #edb488;
-    --sixth-color: #ffe1c9;
+    --primary-color: #391f12;
+
+    --secondary-color: #d27131;
+    --secondary-hover-color: #b45b20;
+    --secondary-light-color: color-mix(in srgb, var(--secondary-color), transparent 80%);
+
+    --third-color: color-mix(in srgb, var(--secondary-color), transparent 90%);
 
     --danger-color: #d52027;
-    --success-color: #20d565;
+    --danger-hover-color:#971b1f;
+    --danger-light-color: color-mix(in srgb, var(--danger-color), transparent 80%);
 
-    --box-shadow-primary: rgba(255, 186, 24, 0.3) 0px 7px 15px 0px;
-    --box-shadow-secondary: 0 0 20px color-mix(in srgb, var(--third-color), transparent 80%);
+    --view-color: #31a2d2;
+    --view-light-color: color-mix(in srgb, var(--view-color), transparent 80%);
 
-    --nav-border-width: 0.1rem;
-    --nav-border-color: var(--secondary-color);
-    --nav-border-color-hover: rgba(255, 255, 255, 0.3);
-    --nav-border: solid var(--nav-border-width) var(--nav-border-color);
-    --nav-border-hover: solid var(--nav-border-width) var(--nav-border-color-hover);
+    --success-color:#31d26f;
+    --success-light-color: color-mix(in srgb, var(--success-color), transparent 80%);
+
+
+    --box-shadow-secondary: 0 0 20px color-mix(in srgb, var(--secondary-color), transparent 80%);
+
+    --nav-border: solid 0.1rem color-mix(in srgb, var(--secondary-color), transparent 75%);
+    --nav-border-hover: solid 0.1rem var(--secondary-color);
+
+    --border-radius: 0.5rem;
+
+    --transition-time: 0.5s ease;
 }
 
 /* -------------------------------------------------- */
 /* Basic HTML element styles */
 /* -------------------------------------------------- */
-html,
-body {
-    overflow-x: hidden;
-    /* Prevent horizontal scrolling */
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    /* Ensure padding and border are included in element's total width and height */
-}
 
-body {
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
     font-family: 'Poppins', sans-serif;
 }
+
+input, textarea, select, span, h1, h2, h3, div, button, a, tr, li, .quill-editor, label{
+    transition: var(--transition-time);
+    outline: none;
+    text-decoration: none;
+}
+
 
 /* Selection styling */
 ::selection {
     color: white;
-    background-color: var(--fourth-color);
-}
+    background-color: var(--secondary-color);
+} 
 
 /* -------------------------------------------------- */
 /* Typography */
 /* -------------------------------------------------- */
-
-h1, h2, h3{
-    margin: 0;
-}
 
 h1 {
     color: var(--primary-color);
@@ -66,21 +72,39 @@ h1 {
 }
 
 h2 {
-    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+}
+
+hr{
+    width: 100%;
+    border: none;
+    border-bottom: solid 0.1rem color-mix(in srgb, var(--secondary-color), transparent 80%);
+    margin: 0.25rem 0;
 }
 
 /* -------------------------------------------------- */
 /* Table styles */
 /* -------------------------------------------------- */
+
+.table-container{
+    width: 100%;
+    overflow-x: auto;
+    box-shadow: var(--box-shadow-secondary);
+    border-radius: var(--border-radius);
+}
+
 table {
     width: 100%;
-    /* Use percentage for responsiveness */
     border-collapse: collapse;
     background-color: white;
-    border-radius: 10px;
     overflow: hidden;
-    box-shadow: var(--box-shadow-secondary);
 }
+
 
 table th,
 table td {
@@ -89,27 +113,26 @@ table td {
     text-align: left;
 }
 
-table tr{
-    border-bottom: 1px solid var(--sixth-color);
+table tr {
+    border-bottom: 0.25rem solid var(--third-color);
+}
+
+table tr:last-child {
+    border-bottom: none; /* Remove from the last */
 }
 
 
+
 table th {
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     color: white;
     font-weight: bold;
     text-transform: uppercase;
     font-size: 0.75rem;
-    /* Use rem for font sizes */
-}
-
-table tr {
-    transition: background-color 0.3s ease-in-out;
-    /* Add easing for smoother transition */
 }
 
 table tr:hover {
-    background-color: color-mix(in srgb, var(--fourth-color), transparent 90%);
+    background-color: var(--third-color);
 }
 
 /* -------------------------------------------------- */
@@ -120,26 +143,33 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
-textarea, .view-product-textarea {
-    box-sizing: border-box;
-    width: 16rem;
-    height: 2.5rem;
-    border: 0.12rem solid rgb(221, 221, 221);
-    /* Use variable for border width */
-    border-radius: 0.3rem;
+textarea,
+.view-product-textarea {
+    height: 3rem;
+    border: 0.12rem solid color-mix(in srgb, var(--secondary-color), transparent 75%);
+    border-radius: var(--border-radius);
     padding-left: 1rem;
-    transition: border-color 0.3s ease-in-out;
-    /* Add easing */
-    font-size: 1rem;
-    display: inline-block;
-    /* Consistent display */
+}
+
+.quill-editor{
+    border: 0.12rem solid color-mix(in srgb, var(--secondary-color), transparent 75%);
+    outline: none;
+    border-radius: var(--border-radius);
+
+}
+
+.ql-toolbar.ql-snow {
+    border: none;
+    border-bottom: 0.12rem solid color-mix(in srgb, var(--secondary-color), transparent 75%);;
+}
+
+.ql-toolbar.ql-snow + .ql-container.ql-snow{
+    border: none;
 }
 
 select {
     padding-left: 0.7rem;
-    /* Reset specific padding */
     -webkit-appearance: none;
-    /* Remove default browser styling */
     -moz-appearance: none;
     appearance: none;
     background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
@@ -154,109 +184,148 @@ textarea {
     min-height: 2.5rem;
     max-height: 19rem;
     padding: 0.5rem 1rem;
-    /* Apply consistent padding */
     resize: none;
     font-size: 1rem;
     font-family: inherit;
-    /* Inherit font from body */
     text-align: left;
-    /* Improve text alignment in textarea */
+}
+
+.view-product-textarea{
+    height: auto;
 }
 
 /* Option styles within select */
 option {
-    background-color: #ffffff;
-    color: #333;
     padding: 0.5rem;
-    /* Add padding for better visual spacing */
 }
 
 option:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     color: white;
 }
 
 /* Form element hover and focus states */
 input:hover,
 select:hover,
-textarea:hover, .view-product-textarea:hover {
-    border-color: var(--fourth-color);
+textarea:hover,
+.view-product-textarea:hover,
+.quill-editor:hover {
+    border-color: var(--secondary-color);
 }
 
 input:focus,
 select:focus,
-textarea:focus {
-    border-color: var(--third-color);
+textarea:focus,
+.quill-editor:focus {
+    border-color: var(--secondary-color);
     outline: none;
 }
 
 /* -------------------------------------------------- */
 /* Button styles */
 /* -------------------------------------------------- */
-button {
+button, .btn {
     display: inline-flex;
-    /* Use inline-flex for better alignment control */
     align-items: center;
     justify-content: center;
-    height: 2.5rem;
-    width: 6.5rem;
+    padding: 1rem;
     border: none;
-    background-color: var(--fourth-color);
+    background-color: var(--secondary-color);
     color: white;
-    border-radius: 0.3rem;
-    transition: background-color 0.3s ease-in-out;
-    /* More specific transition */
+    border-radius: var(--border-radius);
     font-size: 1rem;
+    max-height: 3rem;
     cursor: pointer;
+    outline: none;
 }
 
 button:hover {
-    background-color: var(--third-color);
+    background-color: var(--secondary-hover-color);
 }
 
-/* Specific button variations */
-.button-important {
+button:disabled, button:disabled:hover {
+    background-color: #dcdcdc;
+    cursor: not-allowed;
+    color: rgb(144, 144, 144);
+}
+
+
+
+.edit-btn{
+    color: var(--secondary-color);
+    background-color: var(--secondary-light-color);
+}
+
+.edit-btn:hover{
     background-color: var(--secondary-color);
+    color: white;
 }
 
-.button-important:hover {
-    background-color: var(--primary-color);
+.delete-btn{
+    color: var(--danger-color);
+    background-color: var(--danger-light-color);
 }
 
-.button-danger {
-    background-color: #af1e1e;
-}
-
-.button-danger:hover {
+.delete-btn:hover{
     background-color: var(--danger-color);
+    color: white;
 }
 
-.button-success {
+.view-btn{
+    color: var(--view-color);
+    background-color: var(--view-light-color);
+}
+
+.view-btn:hover{
+    background-color: var(--view-color);
+    color: white;
+}
+
+.success-btn{
+    color: var(--success-color);
+    background-color: var(--success-light-color);
+}
+
+.success-btn:hover{
     background-color: var(--success-color);
+    color: white;
 }
 
-.button-success:hover {
-    background-color: #1eaf56;
-}
+
+
 
 /* -------------------------------------------------- */
 /* Layout and utility classes */
 /* -------------------------------------------------- */
-label {
-    display: block;
-    /* Make labels take full width */
-    margin-bottom: 0.5rem;
-    /* Add some spacing below labels */
-}
 
 .d-flex {
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.d-flex-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.d-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 2rem;
-    box-sizing: border-box;
+}
+
+.align-items-end {
+    align-items: end;
 }
 
 .w-100 {
-    width: 100% !important;
-    /* Use sparingly, consider alternatives */
+    width: 100%;
+}
+
+.align-items-normal {
+    align-items: normal;
 }

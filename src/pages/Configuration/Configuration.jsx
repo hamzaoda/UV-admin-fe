@@ -1,32 +1,30 @@
 // Configuration.js (React Component)
 import { useState, useEffect } from 'react';
 import useApi from '../../hooks/useApi'; // Import the hook
+import CustomCheckbox from '../../components/CustomComponents/CustomCheckboxText/CustomCheckboxText'; // Import the custom checkbox
+import './Configuration.css'; // Import the CSS file
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay'; // ADDED: Import LoadingOverlay
 
 function Configuration() {
     const [lockWebsite, setLockWebsite] = useState(false);
     const [password, setPassword] = useState('');
-    const [formError, setFormError] = useState('');
-    const [formSubmitted, setFormSubmitted] = useState(false);
-    const [successMessage, setSuccessMessage] = useState(''); // Added for success message
-    const { callApi, isLoading, isError, error, data } = useApi();
+    const { callApi, isLoading } = useApi();
+    const [registerEmail, setRegisterEmail] = useState(false); // NEW: State for register email
+    const [enterPassword, setEnterPassword] = useState(false); // NEW: State for enter password
 
 
     // Fetch initial configuration on component mount
     useEffect(() => {
         const fetchConfig = async () => {
-            try {
-                const response = await callApi({
-                    url: '/config',
-                    method: 'GET',
-                });
-                if (response && response.config) {
-                    setPassword(response.config.password);
-                    setLockWebsite(response.config.lockValue);
-                }
-            } catch (fetchError) {
-                //  Handle fetch errors (e.g., display a message to the user)
-                console.error("Error fetching initial configuration:", fetchError);
-                setFormError('Failed to load initial configuration.');
+            const response = await callApi({
+                url: '/config',
+                method: 'GET',
+            });
+            if (response && response.config) {
+                setPassword(response.config.password);
+                setLockWebsite(response.config.lockValue);
+                setRegisterEmail(response.config.isRegisterEmail || false); // ADDED: Initialize registerEmail
+                setEnterPassword(response.config.isPassword || false);     // ADDED: Initialize enterPassword
             }
         };
         fetchConfig();
@@ -35,70 +33,85 @@ function Configuration() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setFormError('');
-        setSuccessMessage(''); // Clear previous success messages
-        setFormSubmitted(true);
-
         if (lockWebsite && password.trim() === '') {
-            setFormError('Password is required when locking the website.');
-            setFormSubmitted(false); // Allow resubmission
             return;
         }
 
         try {
-            const response = await callApi({
+            await callApi({
                 url: '/config',
                 method: 'POST',
-                dataReq: { password, lockValue: lockWebsite }, // Send lockValue
+                dataReq: { 
+                    password, 
+                    lockValue: lockWebsite, 
+                    isRegisterEmail: registerEmail,
+                    isPassword: enterPassword
+                }, 
                 successMessage: 'Configuration saved successfully!', // Pass success message
                 errorMessage: 'Failed to save configuration.',      // Pass error message
             });
 
-            if (response) {
-                setSuccessMessage(response.message || 'Configuration saved successfully!'); // Use the server's message if available
-            }
-            // Reset form *after* successful save
-            setTimeout(() => {
-                setFormSubmitted(false);
-            }, 3000);
         } catch (apiError) {
             // Handle API errors (e.g., display a message to the user).  The 'error'
             //  state variable from useApi will also have this error.
             console.error('Error saving configuration:', apiError);
-            setFormError(apiError.data?.message || 'Failed to save configuration. Please try again.');  // Show server error message
-            setFormSubmitted(false); // Allow resubmission on error
         }
     };
 
     return (
         <div className='configuration-container section-container'>
+            <LoadingOverlay isLoading={isLoading} /> {/* ADDED: LoadingOverlay component */}
+            <h1>Website Configuration</h1>
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={lockWebsite}
-                            onChange={(e) => setLockWebsite(e.target.checked)}
-                        />
-                        Lock Website?
-                    </label>
+                <div className="form-group">
+                    <CustomCheckbox
+                        id="lock-website-checkbox"
+                        label="Lock Website"
+                        checked={lockWebsite}
+                        onChange={(e) => setLockWebsite(e.target.checked)}
+                    />
                 </div>
 
-                <div>
-                    <label>
-                        Password:
+                {lockWebsite && (
+                    <>
+                        <div className="form-group">
+                            <CustomCheckbox
+                                id="register-email-checkbox"
+                                label="Register Email"
+                                checked={registerEmail}
+                                onChange={(e) => setRegisterEmail(e.target.checked)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <CustomCheckbox
+                                id="enter-password-checkbox"
+                                label="Enter Password"
+                                checked={enterPassword}
+                                onChange={(e) => setEnterPassword(e.target.checked)}
+                            />
+                        </div>
+                    </>
+                )}
+
+                {lockWebsite && enterPassword && (
+                    <div className="password-input-container">
+                        <label htmlFor="password-input">Password:</label>
                         <input
+                            id="password-input"
                             type="text"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            disabled={!lockWebsite}
+                            placeholder="Enter password to lock website"
+                            className='w-100'
                         />
-                    </label>
-                </div>
-                {formError && <div style={{ color: 'red' }}>{formError}</div>}
-                {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>} {/* Display success message */}
-                <button type="submit" disabled={isLoading || formSubmitted}>
-                    {isLoading || formSubmitted ? "Saving..." : "Save Configuration"}
+                    </div>
+                )}
+                <button
+                    type="submit"
+                    className="config-submit-button"
+                    disabled={isLoading}
+                >
+                    {isLoading ? "Saving..." : "Save Configuration"}
                 </button>
             </form>
         </div>
