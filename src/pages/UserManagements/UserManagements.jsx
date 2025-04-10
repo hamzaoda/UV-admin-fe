@@ -128,23 +128,29 @@ function UserManagements() {
                 </table>
             </div>
             {/* Pagination Controls using react-paginate */}
-            {totalPages > 1 && (
-                <div className="pagination-container">
-                    <ReactPaginate
-                        previousLabel={'Previous'}
-                        nextLabel={'Next'}
-                        breakLabel={'...'}
-                        breakClassName={'break-me'}
-                        pageCount={totalPages}
-                        marginPagesDisplayed={2}
-                        pageRangeDisplayed={5} // Adjusted for better UX
-                        onPageChange={handlePageChange}
-                        containerClassName={'pagination'}
-                        activeClassName={'active'}
-                        forcePage={currentPage}
-                    />
-                </div>
-            )}
+            <div className="pagination-container">
+                <ReactPaginate
+                    previousLabel={'<'}
+                    nextLabel={'>'}
+                    breakLabel={'...'}
+                    pageCount={totalPages}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={3}
+                    onPageChange={handlePageChange}
+                    containerClassName={'managements-pagination'}
+                    activeClassName={'active'}
+                    disabledClassName={'disabled'}
+                    previousClassName={'managements-pagination-btn'}
+                    nextClassName={'managements-pagination-btn'}
+                    pageClassName={'managements-pagination-btn'}
+                    breakClassName={'managements-pagination-btn'}
+                    previousLinkClassName={'managements-pagination-a'}
+                    nextLinkClassName={'managements-pagination-a'}
+                    pageLinkClassName={'managements-pagination-a'}
+                    breakLinkClassName={'managements-pagination-a'}
+                    forcePage={currentPage}
+                />
+            </div>
         </div>
     );
 }

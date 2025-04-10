@@ -82,7 +82,6 @@
     width: 2.5rem;
     border-radius: var(--border-radius);
     background-color: var(--secondary-light-color);
-    cursor: pointer;
 }
 .managements-pagination-btn {
     display: flex;
